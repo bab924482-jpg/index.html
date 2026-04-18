@@ -3,194 +3,183 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>روايات ذوالفقار - العالمية</title>
+    <title>واتباد ذوالفقار - النسخة الاحترافية</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        /* تعريف متغيرات الألوان (للوضعين الفاتح والداكن) */
         :root {
-            --bg: #f5f6fa; --text: #2d3436; --card: #ffffff; --primary: #ff6b00; /* لون أورنج حيوي */
-            --nav-bg: #ffffff; --nav-text: #636e72; --shadow: rgba(0,0,0,0.05);
+            --bg: #f5f6fa; --text: #2d3436; --card: #ffffff; --primary: #ff6b00;
+            --nav-bg: #ffffff; --nav-text: #636e72; --shadow: rgba(0,0,0,0.08);
         }
         [data-theme="dark"] {
             --bg: #121212; --text: #dfe6e9; --card: #1e1e1e; --primary: #ff8533;
-            --nav-bg: #1e1e1e; --nav-text: #b2bec3; --shadow: rgba(255,255,255,0.01);
+            --nav-bg: #1e1e1e; --nav-text: #b2bec3; --shadow: rgba(0,0,0,0.3);
         }
 
         body {
             font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text);
-            margin: 0; padding-bottom: 75px; /* مساحة للشريط السفلي */
-            transition: background 0.3s, color 0.3s; overscroll-behavior: none;
+            margin: 0; padding-bottom: 75px; transition: 0.3s; overflow-x: hidden;
         }
 
-        /* رأس الصفحة (Header) */
+        /* تنسيق الصفحات */
+        .page { display: none; width: 100%; min-height: 100vh; position: absolute; top: 0; left: 0; }
+        .page.active { display: block; position: relative; animation: slideUp 0.4s ease; }
+
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
         header {
             padding: 15px 20px; display: flex; justify-content: space-between; align-items: center;
             background: var(--card); box-shadow: 0 2px 15px var(--shadow); position: sticky; top: 0; z-index: 100;
         }
-        .app-name { font-size: 22px; font-weight: 700; color: var(--primary); letter-spacing: -0.5px; }
-        .theme-toggle { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text); opacity: 0.8; }
+        .app-name { font-size: 20px; font-weight: 700; color: var(--primary); }
 
-        /* قسم العناوين */
-        .section-header { padding: 25px 20px 10px; display: flex; justify-content: space-between; align-items: center; }
-        .section-title { font-size: 18px; font-weight: 700; margin: 0; }
-        .see-all { font-size: 14px; color: var(--primary); font-weight: 600; cursor: pointer; }
-
-        /* --- (1) تصميم تصفح الأغلفة أفقياً (مثل الصورة) --- */
-        .featured-scroll {
-            display: flex; overflow-x: auto; padding: 10px 20px; gap: 15px;
-            scrollbar-width: none; /* إخفاء شريط التمرير على الفايرفوكس */
-            -webkit-overflow-scrolling: touch; /* تمرير سلس على iOS */
-        }
-        .featured-scroll::-webkit-scrollbar { display: none; } /* إخفاء شريط التمرير على كروم */
-
-        .featured-card {
-            min-width: 130px; max-width: 130px; background: var(--card);
-            border-radius: 12px; box-shadow: 0 5px 20px var(--shadow);
-            overflow: hidden; transition: transform 0.2s;
-        }
-        .featured-card:active { transform: scale(0.97); }
-        .featured-card img { width: 100%; height: 190px; object-fit: cover; display: block; }
-        .featured-info { padding: 8px; text-align: center; }
-        .featured-title { font-size: 13px; font-weight: 600; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-        /* --- (2) تصميم قائمة القصص العمودية (مثل الصورة) --- */
-        .story-list { padding: 10px 20px; display: flex; flex-direction: column; gap: 15px; }
+        /* الأغلفة الأفقية (واتباد ستايل) */
+        .featured-scroll { display: flex; overflow-x: auto; padding: 10px 20px; gap: 15px; scrollbar-width: none; }
+        .featured-scroll::-webkit-scrollbar { display: none; }
         
-        .story-item {
-            background: var(--card); border-radius: 12px; padding: 12px;
-            display: flex; gap: 15px; align-items: center;
-            box-shadow: 0 3px 15px var(--shadow); cursor: pointer; transition: background 0.2s;
-        }
-        .story-item:active { background: rgba(0,0,0,0.03); }
-        [data-theme="dark"] .story-item:active { background: rgba(255,255,255,0.03); }
+        .book-card { min-width: 140px; position: relative; cursor: pointer; }
+        .book-card img { width: 100%; height: 210px; border-radius: 8px; object-fit: cover; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .book-stats { font-size: 11px; margin-top: 5px; display: flex; gap: 8px; opacity: 0.8; }
 
-        .story-cover-mini { width: 60px; height: 80px; border-radius: 8px; object-fit: cover; }
-        
-        .story-details { flex: 1; display: flex; flex-direction: column; gap: 4px; }
-        .story-title-list { font-size: 16px; font-weight: 600; margin: 0; }
-        .story-author { font-size: 13px; color: var(--nav-text); margin: 0; }
-        .story-category {
-            display: inline-block; background: rgba(255, 107, 0, 0.1); color: var(--primary);
-            font-size: 11px; padding: 3px 8px; border-radius: 15px; font-weight: 600; align-self: flex-start;
+        /* قائمة القصص العمودية */
+        .story-list { padding: 15px 20px; }
+        .story-item { 
+            display: flex; gap: 15px; margin-bottom: 20px; cursor: pointer; 
+            background: var(--card); padding: 10px; border-radius: 12px; box-shadow: 0 2px 8px var(--shadow);
         }
+        .story-item img { width: 70px; height: 100px; border-radius: 6px; object-fit: cover; }
+        .story-info h3 { margin: 0; font-size: 16px; }
+        .story-info p { margin: 5px 0; font-size: 12px; opacity: 0.7; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 
-        /* --- (3) تصميم شريط التنقل السفلي (مثل الصورة) --- */
+        /* صفحة القراءة الاحترافية */
+        .reader-header { position: sticky; top: 0; background: var(--card); padding: 10px 20px; display: flex; align-items: center; gap: 15px; z-index: 101; }
+        .progress-bar { position: absolute; bottom: 0; left: 0; height: 3px; background: var(--primary); width: 0%; transition: 0.3s; }
+        .reader-content { padding: 25px; line-height: 2; font-size: 19px; text-align: justify; }
+        .reader-footer { padding: 40px 20px; text-align: center; border-top: 1px solid var(--shadow); }
+        .vote-btn { background: var(--primary); color: white; border: none; padding: 12px 30px; border-radius: 25px; font-weight: bold; font-family: 'Cairo'; cursor: pointer; }
+
+        /* شريط التنقل السفلي */
         .bottom-nav {
             position: fixed; bottom: 0; width: 100%; background: var(--nav-bg);
             display: flex; justify-content: space-around; padding: 12px 0;
-            border-top: 1px solid rgba(0,0,0,0.05); box-shadow: 0 -2px 15px rgba(0,0,0,0.03);
-            z-index: 100;
+            border-top: 1px solid var(--shadow); z-index: 100;
         }
-
-        .nav-item {
-            display: flex; flex-direction: column; align-items: center; gap: 4px;
-            color: var(--nav-text); cursor: pointer; font-size: 12px; font-weight: 600;
-            transition: color 0.2s, opacity 0.2s;
-        }
-        .nav-icon { font-size: 20px; margin-bottom: 2px; }
-        
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--nav-text); cursor: pointer; font-size: 12px; }
         .nav-item.active { color: var(--primary); }
-        .nav-item:not(.active) { opacity: 0.7; }
     </style>
 </head>
 <body id="body">
 
-<header>
-    <div class="app-name">روايات ذوالفقار</div>
-    <button class="theme-toggle" onclick="toggleDarkMode()" id="themeBtn">☀️</button>
-</header>
-
-<div class="section-header">
-    <h2 class="section-title">الأكثر قراءة ��لآن</h2>
-    <span class="see-all">عرض الكل</span>
-</div>
-
-<div class="featured-scroll">
-    <div class="featured-card">
-        <img src="https://i.postimg.cc/XvBw1N6s/cover1.jpg" alt="نور وصقر">
-        <div class="featured-info"><p class="featured-title">نور وصقر</p></div>
-    </div>
-    <div class="featured-card">
-        <img src="https://i.postimg.cc/Kz8p7XWd/cover2.jpg" alt="قيود الغبار">
-        <div class="featured-info"><p class="featured-title">قيود الغبار</p></div>
-    </div>
-    <div class="featured-card">
-        <img src="https://i.postimg.cc/MZsH5T9h/cover3.jpg" alt="عشق العشيرة">
-        <div class="featured-info"><p class="featured-title">عشق العشيرة</p></div>
-    </div>
-</div>
-
-<div class="section-header">
-    <h2 class="section-title">أحدث القصص العراقية</h2>
-</div>
-
-<div class="story-list">
-    <div class="story-item">
-        <img src="https://i.postimg.cc/XvBw1N6s/cover1.jpg" alt="غلاف" class="story-cover-mini">
-        <div class="story-details">
-            <h3 class="story-title-list">نهوة قلم</h3>
-            <p class="story-author">بواسطة ذوالفقار الفريجي</p>
-            <span class="story-category">دراما عشائرية</span>
-        </div>
-    </div>
-    <div class="story-item">
-        <img src="https://i.postimg.cc/Kz8p7XWd/cover2.jpg" alt="غلاف" class="story-cover-mini">
-        <div class="story-details">
-            <h3 class="story-title-list">بين نارين الفصلية</h3>
-            <p class="story-author">بواسطة ذوالفقار الفريجي</p>
-            <span class="story-category">رومانسية</span>
-        </div>
-    </div>
-</div>
-
-<nav class="bottom-nav">
-    <div class="nav-item active">
-        <span class="nav-icon">🏠</span>
-        <span>الرئيسية</span>
-    </div>
-    <div class="nav-item">
-        <span class="nav-icon">🔍</span>
-        <span>استكشف</span>
-    </div>
-    <div class="nav-item">
-        <span class="nav-icon">📖</span>
-        <span>مكتبتي</span>
-    </div>
-    <div class="nav-item">
-        <span class="nav-icon">👤</span>
-        <span>حسابي</span>
-    </div>
-</nav>
-
-<script>
-    // جافا سكريبت للتحكم في الوضع الليلي
-    function toggleDarkMode() {
-        const body = document.getElementById('body');
-        const themeBtn = document.getElementById('themeBtn');
-        const currentTheme = body.getAttribute('data-theme');
+    <div id="home-page" class="page active">
+        <header>
+            <div class="app-name">WATTPAD ذوالفقار</div>
+            <div onclick="toggleDarkMode()" style="cursor: pointer;">🌙</div>
+        </header>
         
-        if (currentTheme === 'dark') {
-            body.removeAttribute('data-theme');
-            themeBtn.innerText = '☀️';
-            localStorage.setItem('theme', 'light'); // حفظ الإعداد
-        } else {
-            body.setAttribute('data-theme', 'dark');
-            themeBtn.innerText = '🌙';
-            localStorage.setItem('theme', 'dark'); // حفظ الإعداد
-        }
-    }
+        <div style="padding: 20px 20px 0;"><h2 style="font-size: 18px;">اكتشف قصصاً جديدة</h2></div>
+        
+        <div class="featured-scroll">
+            <div class="book-card" onclick="openBook('نور وصقر', 'في عتمة الليل، كان صقر ينتظر عودة نور...')">
+                <img src="https://i.postimg.cc/XvBw1N6s/cover1.jpg">
+                <div class="featured-info" style="font-weight: 700; font-size: 14px; margin-top: 5px;">نور وصقر</div>
+                <div class="book-stats"><span>👁️ 15K</span> <span>⭐ 2.1K</span></div>
+            </div>
+            <div class="book-card" onclick="openBook('قيود الغبار', 'ليست كل القيود حديدية، بعضها من ذكريات...')">
+                <img src="https://i.postimg.cc/Kz8p7XWd/cover2.jpg">
+                <div class="featured-info" style="font-weight: 700; font-size: 14px; margin-top: 5px;">قيود الغبار</div>
+                <div class="book-stats"><span>👁️ 8K</span> <span>⭐ 950</span></div>
+            </div>
+        </div>
 
-    // تفعيل الوضع المحفوظ عند تحميل الصفحة
-    window.onload = function() {
-        const savedTheme = localStorage.getItem('theme');
-        const body = document.getElementById('body');
-        const themeBtn = document.getElementById('themeBtn');
-        if (savedTheme === 'dark') {
-            body.setAttribute('data-theme', 'dark');
-            themeBtn.innerText = '🌙';
-        }
-    }
-</script>
+        <div style="padding: 20px 20px 0;"><h2 style="font-size: 18px;">التوصيات المختارة</h2></div>
+        
+        <div class="story-list">
+            <div class="story-item" onclick="openBook('نهوة قلم', 'بين العادات والحب، وقف ذوالفقار يكتب مصيره...')">
+                <img src="https://i.postimg.cc/XvBw1N6s/cover1.jpg">
+                <div class="story-info">
+                    <h3>نهوة قلم</h3>
+                    <p>قصة درامية تتحدث عن الصراعات العشائرية في قالب رومانسي حديث...</p>
+                    <div class="book-stats"><span>👁️ 5.4K</span> <span>⭐ 800</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
 
+    <div id="reader-page" class="page">
+        <div class="reader-header">
+            <div onclick="showPage('home-page')" style="cursor: pointer; font-size: 20px;">➡️</div>
+            <div id="reading-title" style="font-weight: bold; font-size: 16px;">اسم القصة</div>
+            <div class="progress-bar" id="pBar"></div>
+        </div>
+        
+        <div class="reader-content" id="reading-content">
+            </div>
+
+        <div class="reader-footer">
+            <p>هل أعجبتك القصة؟</p>
+            <button class="vote-btn" onclick="this.innerText='⭐ تم التصويت'">⭐ تصويت</button>
+            <p style="margin-top: 20px; opacity: 0.6; font-size: 14px;">تعليقات القراء (12)</p>
+        </div>
+    </div>
+
+    <div id="profile-page" class="page" style="text-align: center; padding-top: 50px;">
+        <div style="width: 100px; height: 100px; background: var(--primary); border-radius: 50%; margin: 0 auto; display: flex; align-items: center; justify-content: center; font-size: 40px; color: white;">Z</div>
+        <h2 style="margin-top: 15px;">ذوالفقار الفريجي</h2>
+        <p style="opacity: 0.7;">كاتب قصص | مبرمج تطبيقات</p>
+        <div style="display: flex; justify-content: center; gap: 30px; margin-top: 30px;">
+            <div><strong>12</strong><br><span style="font-size: 12px;">قصص</span></div>
+            <div><strong>1.2K</strong><br><span style="font-size: 12px;">متابعين</span></div>
+        </div>
+        <button class="vote-btn" style="margin-top: 40px; width: 80%;" onclick="showPage('home-page')">الرجوع للرئيسية</button>
+    </div>
+
+    <nav class="bottom-nav">
+        <div class="nav-item active" onclick="showPage('home-page'); setActiveNav(0)">
+            <span>🏠</span><span>الرئيسية</span>
+        </div>
+        <div class="nav-item" onclick="alert('قريباً: ميزة البحث الذكي')">
+            <span>🔍</span><span>استكشف</span>
+        </div>
+        <div class="nav-item" onclick="showPage('profile-page'); setActiveNav(2)">
+            <span>👤</span><span>حسابي</span>
+        </div>
+    </nav>
+
+    <script>
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            window.scrollTo(0,0);
+        }
+
+        function openBook(title, content) {
+            document.getElementById('reading-title').innerText = title;
+            // تكرار النص لجعله يبدو طويلاً ويحتاج تمرير
+            let fullText = "";
+            for(let i=0; i<20; i++) { fullText += "<h3>الفصل الجديد</h3>" + content + "<br><br>"; }
+            document.getElementById('reading-content').innerHTML = fullText;
+            showPage('reader-page');
+        }
+
+        // شريط التقدم عند القراءة
+        window.onscroll = function() {
+            let winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            let height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            let scrolled = (winScroll / height) * 100;
+            if(document.getElementById("pBar")) document.getElementById("pBar").style.width = scrolled + "%";
+        };
+
+        function setActiveNav(index) {
+            document.querySelectorAll('.nav-item').forEach((item, i) => {
+                if(i === index) item.classList.add('active');
+                else item.classList.remove('active');
+            });
+        }
+
+        function toggleDarkMode() {
+            const body = document.getElementById('body');
+            if (body.getAttribute('data-theme') === 'dark') body.removeAttribute('data-theme');
+            else body.setAttribute('data-theme', 'dark');
+        }
+    </script>
 </body>
 </html>
