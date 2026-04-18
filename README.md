@@ -2,70 +2,108 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>لعبة صائد النجوم - ذوالفقار</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>روايات ذوالفقار</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        body { margin: 0; overflow: hidden; background: #2c3e50; font-family: Arial, sans-serif; touch-action: none; }
-        #gameCanvas { display: block; background: #1a1a2e; }
-        #ui { position: absolute; top: 10px; left: 10px; color: white; font-size: 20px; pointer-events: none; }
-        #msg { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
-               color: #f1c40f; font-size: 30px; text-align: center; display: none; }
+        /* تعريف الألوان (الوضع الفاتح والداكن) */
+        :root {
+            --bg: #f8f9fa; --text: #2d3436; --card: #ffffff; --primary: #e67e22; --nav: #ffffff;
+        }
+        [data-theme="dark"] {
+            --bg: #121212; --text: #dfe6e9; --card: #1e1e1e; --nav: #1e1e1e;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text);
+            margin: 0; padding-bottom: 80px; transition: 0.3s;
+        }
+
+        /* رأس الصفحة */
+        header {
+            padding: 20px; display: flex; justify-content: space-between; align-items: center;
+            background: var(--card); box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .logo { font-size: 22px; font-weight: bold; color: var(--primary); }
+
+        /* قسم القصص (التحريك الأفقي مثل الصور التي أرسلتها) */
+        .section-title { padding: 20px 20px 10px; font-size: 18px; font-weight: bold; }
+        
+        .story-container {
+            display: flex; overflow-x: auto; padding: 10px 20px; gap: 15px;
+            scrollbar-width: none; /* إخفاء شريط التمرير */
+        }
+
+        .story-card {
+            min-width: 140px; background: var(--card); border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow: hidden; transition: 0.3s;
+        }
+
+        .story-card img { width: 100%; height: 200px; object-fit: cover; }
+        
+        .story-info { padding: 10px; text-align: center; font-size: 14px; }
+
+        /* شريط التنقل السفلي */
+        .bottom-nav {
+            position: fixed; bottom: 0; width: 100%; background: var(--nav);
+            display: flex; justify-content: space-around; padding: 12px 0;
+            border-top: 1px solid rgba(0,0,0,0.1); box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+        }
+
+        .nav-item { cursor: pointer; opacity: 0.6; font-size: 12px; text-align: center; }
+        .nav-item.active { opacity: 1; color: var(--primary); font-weight: bold; }
+
+        /* زر الوضع الليلي */
+        .toggle-btn {
+            background: var(--primary); color: white; border: none;
+            padding: 8px 16px; border-radius: 25px; cursor: pointer; font-family: 'Cairo';
+        }
     </style>
 </head>
-<body>
+<body id="body">
 
-<div id="ui">النقاط: <span id="score">0</span></div>
-<div id="msg">انتهى الوقت!<br><button onclick="location.reload()" style="padding:10px 20px; font-size:20px;">العب مرة ثانية</button></div>
-<canvas id="gameCanvas"></canvas>
+<header>
+    <div class="logo">روايات ذوالفقار</div>
+    <button class="toggle-btn" onclick="toggleDarkMode()">الوضع الليلي</button>
+</header>
+
+<div class="section-title">أحدث القصص المختارة</div>
+
+<div class="story-container">
+    <div class="story-card">
+        <img src="https://i.postimg.cc/XvBw1N6s/cover1.jpg" alt="نور وصقر">
+        <div class="story-info">نور وصقر</div>
+    </div>
+    <div class="story-card">
+        <img src="https://i.postimg.cc/Kz8p7XWd/cover2.jpg" alt="قصة 2">
+        <div class="story-info">غبار الزمن</div>
+    </div>
+    <div class="story-card">
+        <img src="https://i.postimg.cc/MZsH5T9h/cover3.jpg" alt="قصة 3">
+        <div class="story-info">نهوة قلم</div>
+    </div>
+</div>
+
+<div class="section-title">الأكثر قراءة هذا الأسبوع</div>
+<div style="padding: 0 20px; opacity: 0.7;">قريباً سيتم إضافة المزيد من الفصول...</div>
+
+<nav class="bottom-nav">
+    <div class="nav-item active">🏠<br>الرئيسية</div>
+    <div class="nav-item">📖<br>مكتبتي</div>
+    <div class="nav-item">👤<br>حسابي</div>
+</nav>
 
 <script>
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
-    const scoreElement = document.getElementById('score');
-    const msg = document.getElementById('msg');
-
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-
-    let score = 0;
-    let gameActive = true;
-    let star = { x: Math.random() * (canvas.width - 50), y: Math.random() * (canvas.height - 50), size: 40 };
-
-    function drawStar() {
-        ctx.fillStyle = '#f1c40f';
-        ctx.beginPath();
-        ctx.arc(star.x + 20, star.y + 20, star.size / 2, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.closePath();
-    }
-
-    function update() {
-        if (!gameActive) return;
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        drawStar();
-        requestAnimationFrame(update);
-    }
-
-    canvas.addEventListener('touchstart', (e) => {
-        if (!gameActive) return;
-        const touch = e.touches[0];
-        const dist = Math.hypot(touch.clientX - (star.x + 20), touch.clientY - (star.y + 20));
-        
-        if (dist < star.size) {
-            score++;
-            scoreElement.innerText = score;
-            star.x = Math.random() * (canvas.width - 50);
-            star.y = Math.random() * (canvas.height - 50);
+    function toggleDarkMode() {
+        const body = document.getElementById('body');
+        const currentTheme = body.getAttribute('data-theme');
+        if (currentTheme === 'dark') {
+            body.removeAttribute('data-theme');
+        } else {
+            body.setAttribute('data-theme', 'dark');
         }
-    });
-
-    // تنتهي اللعبة بعد 30 ثانية
-    setTimeout(() => {
-        gameActive = false;
-        msg.style.display = 'block';
-    }, 30000);
-
-    update();
+    }
 </script>
 
 </body>
