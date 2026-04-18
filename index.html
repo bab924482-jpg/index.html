@@ -2,80 +2,71 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="yandex-verification" content="a802d131d1eebddb" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Video Hub Pro</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>لعبة صائد النجوم - ذوالفقار</title>
     <style>
-        :root { --main-red: #ff0000; --bg-black: #0a0a0a; --card-bg: #111; --btn-green: #28a745; }
-        body { background-color: var(--bg-black); color: white; font-family: sans-serif; margin: 0; padding: 0; }
-        .header { background: #1a1a1a; padding: 15px; text-align: center; border-bottom: 2px solid var(--main-red); }
-        .header h1 { margin: 0; font-size: 18px; color: var(--main-red); }
-        .container { padding: 12px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-        .video-card { background: var(--card-bg); border-radius: 8px; overflow: hidden; border: 1px solid #222; cursor: pointer; position: relative; }
-        .video-card img { width: 100%; height: 110px; object-fit: cover; display: block; }
-        .play-overlay { position: absolute; top: 35%; left: 50%; transform: translate(-50%, -50%); font-size: 24px; color: white; text-shadow: 0 0 10px #000; }
-        .video-info { padding: 8px; font-size: 12px; text-align: center; font-weight: bold; background: #161616; }
-        
-        #player-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 10000; }
-        .close-btn { position: absolute; top: 15px; right: 15px; background: var(--main-red); color: white; border: none; padding: 8px 15px; border-radius: 4px; z-index: 10001; font-weight: bold; cursor: pointer; }
-        
-        #waiting-screen { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; width: 90%; }
-        /* الزر الافتراضي أخضر */
-        .ad-btn { background: var(--btn-green); color: white; padding: 20px; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 20px; width: 100%; transition: 0.3s; }
-        /* تنسيق الزر عند الفشل */
-        .btn-fail { background: var(--main-red) !important; animation: shake 0.5s; }
-        
-        @keyframes shake {
-            0% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            50% { transform: translateX(5px); }
-            100% { transform: translateX(0); }
-        }
-        
-        iframe { width: 100%; height: 100%; border: none; display: none; }
+        body { margin: 0; overflow: hidden; background: #2c3e50; font-family: Arial, sans-serif; touch-action: none; }
+        #gameCanvas { display: block; background: #1a1a2e; }
+        #ui { position: absolute; top: 10px; left: 10px; color: white; font-size: 20px; pointer-events: none; }
+        #msg { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+               color: #f1c40f; font-size: 30px; text-align: center; display: none; }
     </style>
 </head>
 <body>
-    <div class="header"><h1>المقاطع الحصرية 🔥</h1></div>
-    <div class="container" id="video-grid"></div>
 
-    <div id="player-overlay">
-        <button id="close-button" class="close-btn" onclick="closePlayer()">إغلاق X</button>
+<div id="ui">النقاط: <span id="score">0</span></div>
+<div id="msg">انتهى الوقت!<br><button onclick="location.reload()" style="padding:10px 20px; font-size:20px;">العب مرة ثانية</button></div>
+<canvas id="gameCanvas"></canvas>
+
+<script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const scoreElement = document.getElementById('score');
+    const msg = document.getElementById('msg');
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    let score = 0;
+    let gameActive = true;
+    let star = { x: Math.random() * (canvas.width - 50), y: Math.random() * (canvas.height - 50), size: 40 };
+
+    function drawStar() {
+        ctx.fillStyle = '#f1c40f';
+        ctx.beginPath();
+        ctx.arc(star.x + 20, star.y + 20, star.size / 2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.closePath();
+    }
+
+    function update() {
+        if (!gameActive) return;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawStar();
+        requestAnimationFrame(update);
+    }
+
+    canvas.addEventListener('touchstart', (e) => {
+        if (!gameActive) return;
+        const touch = e.touches[0];
+        const dist = Math.hypot(touch.clientX - (star.x + 20), touch.clientY - (star.y + 20));
         
-        <div id="waiting-screen">
-            <h2 id="wait-title" style="color: var(--main-red);">تأكيد المشاهدة</h2>
-            <p id="wait-msg">يجب الضغط على الزر أدناه والبقاء في صفحة الإعلان لمدة 10 ثوانٍ</p>
-            <button id="trigger-ad-btn" class="ad-btn" onclick="openAd()">شاهد الاعلان لمدة 10 ثواني</button>
-        </div>
+        if (dist < star.size) {
+            score++;
+            scoreElement.innerText = score;
+            star.x = Math.random() * (canvas.width - 50);
+            star.y = Math.random() * (canvas.height - 50);
+        }
+    });
 
-        <iframe id="video-iframe" src="" allowfullscreen></iframe>
-    </div>
+    // تنتهي اللعبة بعد 30 ثانية
+    setTimeout(() => {
+        gameActive = false;
+        msg.style.display = 'block';
+    }, 30000);
 
-    <script>
-        const myVideos = [
-            { title: "نيج وشم وبوس ورضع", img: "https://pomf2.lain.la/f/7ljeiyih.jpg", url: "https://pomf2.lain.la/f/2kmvmtqc.mp4" },
-            { title: " المحامي ينيج المنقبة ", img: "https://pomf2.lain.la/f/blffki4q.jpg", url: "https://pomf2.lain.la/f/2zv7s4.mp4" },
-            { title: " موطي ولج حيل ", img: "https://pomf2.lain.la/f/saeuwiu.jpg", url: "https://pomf2.lain.la/f/wq5mewq.mp4" },
-            { title: "عراقية ماتقبل تناج ينيجها غصب", img: "https://pomf2.lain.la/f/d831j7ik.jpg", url: "https://pomf2.lain.la/f/4tzdviq0.mp4" },
-            { title: "اخ طيزي ماتحمل بعد", img: "https://pomf2.lain.la/f/r80dknj6.jpg", url: "https://pomf2.lain.la/f/jil7rg0k.mp4" },{ title: "عراقية يغتصبها", img: "https://pomf2.lain.la/f/g9d9ez3f.jpg", url: "https://pomf2.lain.la/f/oeuqnwan.mp4" },
-            { title: " خدرت قبل النيج", img: "https://pomf2.lain.la/f/djucfwji.jpg", url: "https://pomf2.lain.la/f/ql3ikm3j.mp4" }
-        ];
+    update();
+</script>
 
-        let currentVideoUrl = "";
-        let adOpened = false;
-        let timeLeft = 10;
-        let timerStarted = false;
-        let countdownInterval;
-
-        const grid = document.getElementById('video-grid');
-        myVideos.forEach(vid => {
-            grid.innerHTML += <div class="video-card" onclick="preparePlayer('${vid.url}')"><img src="${vid.img}"><div class="play-overlay">▶</div><div class="video-info">${vid.title}</div></div>;
-        });
-
-        function preparePlayer(videoUrl) {
-            currentVideoUrl = videoUrl;
-            resetState();
-            const btn = document.getElementById('trigger-ad-btn');
-            btn.classList.remove('btn-fail');
-            document.getElementById('player-overlay').style.display = 'block';
-            document.getElementById('video-ifr
+</body>
+</html>
