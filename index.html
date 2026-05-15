@@ -520,4 +520,352 @@
             editType = 'chapter';
             navigateTo('select-story-screen');
             const { data } = await _supabase.from('stories').select('id, title').eq('user_id', currentUserId);
-            storyListContainer.innerHTML =
+            storyListContainer.innerHTML = '';
+            (data || []).forEach(story => {
+                const item = document.createElement('div');
+                item.className = 'menu-item';
+                item.innerHTML = `<span>${story.title}</span>`;
+                item.onclick = async () => {
+                    const { data: chapters } = await _supabase.from('chapters').select('id, title, content').eq('story_id', story.id);
+                    storyListContainer.innerHTML = '';
+                    (chapters || []).forEach(ch => {
+                        const chItem = document.createElement('div');
+                        chItem.className = 'menu-item';
+                        chItem.innerHTML = `<span>${ch.title}</span>`;
+                        chItem.onclick = () => {
+                            isEditMode = true;
+                            editTargetId = ch.id;
+                            document.getElementById('part-title').value = ch.title;
+                            editorArea.value = ch.content;
+                            navigateTo('editor-screen');
+                        };
+                        storyListContainer.appendChild(chItem);
+                    });
+                };
+                storyListContainer.appendChild(item);
+            });
+        };
+        
+        // تعديل nextBtn و publishBtn للتنقل
+        const oldNextClick = nextBtn.onclick;
+        nextBtn.onclick = async () => {
+            if(!nextBtn.classList.contains('active') || isPublishing) return;
+            
+            isPublishing = true;
+            nextBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+
+            if(isEditMode && editType === 'story') {
+                try {
+                    let imgUrl = null;
+                    if(coverFile) {
+                        const ext = coverFile.name.split('.').pop();
+                        const fileName = `img_${Date.now()}.${ext}`;
+                        await _supabase.storage.from('story-images').upload(fileName, coverFile);
+                        const { data: linkData } = _supabase.storage.from('story-images').getPublicUrl(fileName);
+                        imgUrl = linkData.publicUrl;
+                    }
+                    
+                    const updateObj = { title: titleInput.value, description: descInput.value, nem: nemInput.value };
+                    if(imgUrl) updateObj.image_data = imgUrl;
+
+                    await _supabase.from('stories').update(updateObj).eq('id', editTargetId);
+                    shouldReload = true;
+                    showCustomAlert('تم التعديل بنجاح');
+                } catch (e) {
+                    isPublishing = false;
+                    nextBtn.innerHTML = 'التالي';
+                    showCustomAlert("خطأ في الاتصال");
+                }
+            } else {
+                navigateTo('editor-screen');
+                isPublishing = false;
+                nextBtn.innerHTML = 'التالي';
+            }
+        };
+        
+        const oldPublishClick = publishBtn.onclick;
+        publishBtn.onclick = async () => {
+            if (isPublishing) return;
+            isPublishing = true;
+            publishBtn.disabled = true;
+            publishBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+
+            try {
+                if(isEditMode && editType === 'chapter') {
+                    await _supabase.from('chapters').update({ 
+                        title: document.getElementById('part-title').value, 
+                        content: editorArea.value 
+                    }).eq('id', editTargetId);
+                    shouldReload = true;
+                    showCustomAlert('تم النشر بنجاح');
+                } else if (selectedStoryId) {
+                    await _supabase.from('chapters').insert([{ 
+                        story_id: selectedStoryId, 
+                        title: document.getElementById('part-title').value, 
+                        content: editorArea.value 
+                    }]);
+                    shouldReload = true;
+                    showCustomAlert('تم النشر بنجاح');
+                } else {
+                    const ext = coverFile.name.split('.').pop();
+                    const fileName = `img_${Date.now()}_${Math.floor(Math.random() * 1000)}.${ext}`;
+                    const { data: upData, error: upErr } = await _supabase.storage.from('story-images').upload(fileName, coverFile);
+                    if (upErr) throw upErr;
+
+                    const { data: linkData } = _supabase.storage.from('story-images').getPublicUrl(fileName);
+                    
+                    const { data: newStory, error: storyErr } = await _supabase.from('stories').insert([{
+                        title: titleInput.value,
+                        description: descInput.value,
+                        image_data: linkData.publicUrl,
+                        user_id: currentUserId,
+                        nem: nemInput.value,
+                        views: 0,
+                        created_at: new Date().toISOString()
+                    }]).select();
+
+                    if (storyErr) throw storyErr;
+
+                    await _supabase.from('chapters').insert([{
+                        story_id: newStory[0].id,
+                        title: document.getElementById('part-title').value || 'الفصل الأول',
+                        content: editorArea.value
+                    }]);
+                    shouldReload = true;
+                    showCustomAlert('تم النشر بنجاح');
+                }
+            } catch (e) {
+                isPublishing = false;
+                publishBtn.disabled = false;
+                publishBtn.innerHTML = 'نشر';
+                showCustomAlert("حدث خطأ أثناء النشر: " + e.message);
+            }
+        };
+        
+        const _supabase = supabase.createClient('https://warzwyuiiapkdbwbtchg.supabase.co', 'sb_publishable_mCVbIuIw7bv0ljVDavAvrA_pLt-MbNb');
+        
+        let shouldReload = false;
+        function showCustomAlert(msg) {
+            document.getElementById('alert-message').innerText = msg;
+            document.getElementById('custom-alert-modal').style.display = 'flex';
+        }
+        function closeCustomAlert() {
+            document.getElementById('custom-alert-modal').style.display = 'none';
+            if (shouldReload) {
+                shouldReload = false;
+                location.reload();
+            }
+        }
+
+        let currentUserId = null;
+        let isLoginMode = true;
+        function toggleAuthMode() {
+            isLoginMode = !isLoginMode;
+            document.getElementById('auth-title').innerText = isLoginMode ? 'تسجيل الدخول' : 'إنشاء حساب';
+            document.getElementById('auth-submit-btn').innerText = isLoginMode ? 'دخول' : 'إنشاء';
+            document.getElementById('auth-toggle-text').innerText = isLoginMode ? 'ليس لديك حساب؟ سجل الآن' : 'لديك حساب؟ سجل الدخول';
+        }
+
+        document.getElementById('auth-submit-btn').addEventListener('click', async () => {
+            const email = document.getElementById('auth-email').value;
+            const password = document.getElementById('auth-password').value;
+            let result;
+            
+            if (isLoginMode) {
+                result = await _supabase.auth.signInWithPassword({ email, password });
+                if (result.error) {
+                    showCustomAlert(result.error.message);
+                } else {
+                    location.reload();
+                }
+            } else {
+                result = await _supabase.auth.signUp({ email, password });
+                if (result.error) {
+                    showCustomAlert(result.error.message);
+                } else {
+                    showCustomAlert("راجع بريدك الإلكتروني لتأكيد تسجيل حسابك ثم حاول تسجيل الدخول مجددا");
+                }
+            }
+        });
+
+        _supabase.auth.getSession().then(({ data }) => {
+            if (data.session) {
+                currentUserId = data.session.user.id;
+                
+                const urlParams = new URLSearchParams(window.location.search);
+                const chapterId = urlParams.get('chapter_id');
+                const storyId = urlParams.get('story_id');
+                
+                if (chapterId && storyId) {
+                    document.getElementById('main-app').style.display = 'block';
+                    loadStoriesFromDB().then(() => {
+                        const story = window.storiesCache.find(s => s.id == storyId);
+                        if(story) window.openStoryDetail(story, chapterId, 'chapters');
+                    });
+                } else {
+                    document.getElementById('main-app').style.display = 'block';
+                    navigateTo('content', true);
+                    loadStoriesFromDB();
+                }
+            } else {
+                document.getElementById('auth-screen').style.display = 'flex';
+            }
+        });
+
+        const searchBox = document.getElementById('search-box');
+        const searchResults = document.getElementById('search-results');
+        
+        searchBox.addEventListener('input', async () => {
+            const query = searchBox.value;
+            if(query.length < 2) { searchResults.innerHTML = ''; return; }
+            const { data } = await _supabase.from('stories').select('*').or(`title.ilike.%${query}%,description.ilike.%${query}%`);
+            searchResults.innerHTML = '';
+            (data || []).forEach(story => {
+                const div = document.createElement('div');
+                div.className = 'search-list-item';
+                div.onclick = () => window.openStoryDetail(story);
+                div.innerHTML = `
+                    <div class="search-item-img" style="background-image: url(${story.image_data});"></div>
+                    <div class="search-item-info">
+                        <div style="font-weight:bold;">${story.title}</div>
+                        <div style="font-size: 12px; color: #ff500a;">${story.nem || 'كاتب غير معروف'}</div>
+                        <div style="font-size: 12px; color: #888;">${story.views || 0} مشاهدة</div>
+                    </div>
+                `;
+                searchResults.appendChild(div);
+            });
+        });
+
+        const checkEditor = () => {
+            if(partTitle.value.trim() && editorArea.value.trim()) publishBtn.disabled = false;
+            else publishBtn.disabled = true;
+        };
+        partTitle.addEventListener('input', checkEditor);
+        editorArea.addEventListener('input', checkEditor);
+
+        async function loadStoriesFromDB() {
+            loadingSpinner.style.display = 'block';
+            const containers = document.querySelectorAll('.scroll-container');
+            const { data } = await _supabase.from('stories').select('*').order('created_at', { ascending: false });
+            
+            if (data) {
+                window.storiesCache = data;
+                
+                let shuffledStories = [...data].sort(() => 0.5 - Math.random());
+                let usedStoryIds = new Set();
+
+                containers.forEach((container, index) => {
+                    container.innerHTML = '';
+                    
+                    let count = 0;
+                    for (let story of shuffledStories) {
+                        if (count >= 10) break;
+                        if (!usedStoryIds.has(story.id)) {
+                            usedStoryIds.add(story.id);
+                            count++;
+                            
+                            const wrapper = document.createElement('div');
+                            wrapper.style.minWidth = '100px';
+                            wrapper.onclick = (e) => {
+                                const originalContent = wrapper.innerHTML;
+                                wrapper.innerHTML = `<div class="story-item" style="display:flex; align-items:center; justify-content:center; background:#eee; border-radius:8px; height:140px;"><i class="fa-solid fa-spinner fa-spin" style="color:#ff500a; font-size:24px;"></i></div>`;
+                                window.openStoryDetail(story).finally(() => {
+                                    wrapper.innerHTML = originalContent;
+                                });
+                            };
+                            
+                            let htmlContent = `<div class="story-item" style="background-image: url(${story.image_data});"></div>`;
+                            
+                            if (index === 2 || index === 3) {
+                                htmlContent += `<div style="text-align: center; margin-top: 5px; font-size: 12px; color: #666; font-weight: bold;"><i class="fa-solid fa-eye"></i> ${story.views || 0}</div>`;
+                            }
+                            
+                            wrapper.innerHTML = htmlContent;
+                            container.appendChild(wrapper);
+                        }
+                    }
+                });
+            }
+            loadingSpinner.style.display = 'none';
+        }
+
+        let isPublishing = false;
+        let storyToDeleteId = null;
+        let hasImage = false;
+        let coverFile = null;
+        let selectedStoryId = null;
+        let isEditMode = false;
+        let editTargetId = null;
+        let editType = null;
+        
+        const titleInput = document.getElementById('title-input');
+        const nemInput = document.getElementById('nem-input');
+        const descInput = document.getElementById('desc-input');
+        const fileUpload = document.getElementById('file-upload');
+        const nextBtn = document.getElementById('next-btn');
+        const publishBtn = document.getElementById('publish-btn');
+        const editorArea = document.getElementById('main-editor-area');
+        const partTitle = document.getElementById('part-title');
+        const confirmDialog = document.getElementById('confirm-dialog');
+        const confirmYes = document.getElementById('confirm-yes');
+        const confirmNo = document.getElementById('confirm-no');
+        const loadingSpinner = document.getElementById('loading-spinner');
+        const storyListContainer = document.getElementById('story-list-container');
+        
+        window.deleteStory = async (id) => {
+            confirmDialog.style.display = 'flex';
+            confirmYes.onclick = async () => {
+                confirmDialog.style.display = 'none';
+                await _supabase.from('stories').delete().eq('id', id);
+                location.reload();
+            };
+            confirmNo.onclick = () => { confirmDialog.style.display = 'none'; };
+        };
+
+        window.showChaptersForDelete = async (storyId) => {
+            const { data: chapters } = await _supabase.from('chapters').select('id, title').eq('story_id', storyId);
+            storyListContainer.innerHTML = '<div class="menu-item" onclick="navigateTo(\'select-story-screen\')\">رجوع للقائمة</div>';
+            (chapters || []).forEach(ch => {
+                const item = document.createElement('div');
+                item.className = 'menu-item';
+                item.innerHTML = `<span>${ch.title}</span> <i class="fa-solid fa-trash" style="color:red;"></i>`;
+                item.onclick = async () => {
+                    confirmDialog.style.display = 'flex';
+                    confirmYes.onclick = async () => {
+                        confirmDialog.style.display = 'none';
+                        await _supabase.from('chapters').delete().eq('id', ch.id);
+                        location.reload();
+                    };
+                    confirmNo.onclick = () => { confirmDialog.style.display = 'none'; };
+                };
+                storyListContainer.appendChild(item);
+            });
+        };
+
+        fileUpload.addEventListener('change', function() {
+            coverFile = this.files[0];
+            if(coverFile) { 
+                hasImage = true; 
+                checkForm(); 
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('upload-label').innerHTML = `<img src="${e.target.result}" style="width:100%; height:100%; object-fit:cover; border-radius:8px;">`;
+                };
+                reader.readAsDataURL(coverFile);
+            }
+        });
+
+        titleInput.addEventListener('input', checkForm);
+        nemInput.addEventListener('input', checkForm);
+        descInput.addEventListener('input', checkForm);
+
+        function checkForm() {
+            if(hasImage && titleInput.value.length > 0 && nemInput.value.length > 0 && descInput.value.length > 0) nextBtn.classList.add('active');
+            else nextBtn.classList.remove('active');
+        }
+        
+        checkForm();
+        checkEditor();
+    </script>
+</body>
+</html>
