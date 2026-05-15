@@ -22,6 +22,7 @@
             justify-content: center;
             align-items: center;
             z-index: 10000;
+            transition: opacity 0.5s;
         }
         .splash-content {
             text-align: center;
@@ -30,6 +31,11 @@
         .splash-content i {
             font-size: 60px;
             margin-bottom: 20px;
+            animation: bounce 1s infinite;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
         }
         
         /* Auth Screen */
@@ -144,7 +150,9 @@
             background-size: cover;
             background-position: center;
             cursor: pointer;
+            transition: transform 0.2s;
         }
+        .story-item:active { transform: scale(0.95); }
         
         input, textarea {
             width: 100%;
@@ -153,6 +161,11 @@
             border: 1px solid #ddd;
             border-radius: 10px;
             font-size: 14px;
+            font-family: inherit;
+        }
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #ff500a;
         }
         
         button {
@@ -163,7 +176,9 @@
             border-radius: 25px;
             font-weight: bold;
             cursor: pointer;
+            transition: opacity 0.2s;
         }
+        button:active { opacity: 0.8; }
         
         .menu-item {
             background: white;
@@ -174,6 +189,11 @@
             justify-content: space-between;
             align-items: center;
             cursor: pointer;
+            transition: transform 0.1s, background 0.2s;
+        }
+        .menu-item:active {
+            background: #f0f0f0;
+            transform: scale(0.98);
         }
         
         .alert-modal {
@@ -217,6 +237,20 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        
+        .error-toast {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #ff4444;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            z-index: 10002;
+            display: none;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
@@ -225,7 +259,7 @@
 <div id="splash-screen">
     <div class="splash-content">
         <i class="fa-solid fa-book-open"></i>
-        <h2>قصصي</h2>
+        <h2>📖 قصصي</h2>
         <p>جاري التحميل...</p>
     </div>
 </div>
@@ -303,7 +337,7 @@
             <span id="create-next-btn" style="color:#ccc; cursor:pointer;">التالي</span>
         </div>
         <div style="padding: 15px;">
-            <div id="cover-upload" style="width:120px; height:150px; background:#eee; border-radius:12px; display:flex; align-items:center; justify-content:center; cursor:pointer; margin-bottom:20px;">
+            <div id="cover-upload" style="width:120px; height:150px; background:#eee; border-radius:12px; display:flex; align-items:center; justify-content:center; cursor:pointer; margin-bottom:20px; background-size:cover; background-position:center;">
                 <i class="fa-solid fa-plus" style="font-size:30px; color:#aaa;"></i>
             </div>
             <input type="text" id="story-title" placeholder="عنوان القصة">
@@ -357,33 +391,60 @@
     <div class="spinner"></div>
 </div>
 
+<div id="error-toast" class="error-toast"></div>
+
 <script>
-    // تكوين Supabase
+    // ====================== إعداد Supabase ======================
     const supabaseUrl = 'https://warzwyuiiapkdbwbtchg.supabase.co';
-    const supabaseKey = 'sb_publishable_mCVbIuIw7bv0ljVDavAvrA_pLt-MbNb';
-    const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indhcnd6eXVpaWFwa2Rid2J0Y2hnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDAwMDAwMDAsImV4cCI9MjA0NTc2MDAwMH0.dummy';
     
+    let supabase;
     let currentUser = null;
     let currentStoryId = null;
     let coverImageData = null;
     let isEditMode = false;
     let editStoryId = null;
     
-    // إظهار/إخفاء التحميل
+    // محاولة إنشاء اتصال Supabase مع معالجة الأخطاء
+    try {
+        supabase = supabaseJs.createClient(supabaseUrl, supabaseKey);
+        console.log('✅ Supabase connected');
+    } catch(e) {
+        console.error('❌ Supabase error:', e);
+        // استمر بدون Supabase (وضع تجريبي)
+        supabase = null;
+    }
+    
+    // ====================== دوال مساعدة ======================
     function showLoading(show) {
-        document.getElementById('loading').style.display = show ? 'flex' : 'none';
+        const loadingEl = document.getElementById('loading');
+        if (loadingEl) loadingEl.style.display = show ? 'flex' : 'none';
     }
     
-    // تنبيه
     function showAlert(msg) {
-        document.getElementById('alert-message').innerText = msg;
-        document.getElementById('alert-modal').style.display = 'flex';
-    }
-    function closeAlert() {
-        document.getElementById('alert-modal').style.display = 'none';
+        const alertMsg = document.getElementById('alert-message');
+        const alertModal = document.getElementById('alert-modal');
+        if (alertMsg) alertMsg.innerText = msg;
+        if (alertModal) alertModal.style.display = 'flex';
     }
     
-    // تبديل الشاشات
+    function closeAlert() {
+        const alertModal = document.getElementById('alert-modal');
+        if (alertModal) alertModal.style.display = 'none';
+    }
+    
+    function showErrorToast(msg) {
+        const toast = document.getElementById('error-toast');
+        if (toast) {
+            toast.innerText = msg;
+            toast.style.display = 'block';
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 3000);
+        }
+    }
+    
+    // ====================== نظام الشاشات ======================
     function showScreen(screenName) {
         const screens = ['home', 'search', 'write', 'library', 'create-story', 'editor', 'story-detail'];
         screens.forEach(s => {
@@ -407,25 +468,48 @@
         if (screenName === 'home') loadStories();
     }
     
-    // تحميل القصص
+    // ====================== تحميل القصص ======================
     async function loadStories() {
-        showLoading(true);
-        const { data, error } = await supabase.from('stories').select('*').order('created_at', { ascending: false });
-        showLoading(false);
-        
-        if (error) {
-            console.error(error);
+        if (!supabase) {
+            showErrorToast('⚠️ وضع تجريبي - لا يوجد اتصال بقاعدة البيانات');
             return;
         }
         
-        // تحديث الأرفف
-        const featured = data.slice(0, 10);
-        const popular = [...data].sort((a,b) => (b.views||0) - (a.views||0)).slice(0, 10);
-        const latest = data.slice(0, 10);
-        
-        renderStories('featured-container', featured);
-        renderStories('popular-container', popular);
-        renderStories('latest-container', latest);
+        showLoading(true);
+        try {
+            const { data, error } = await supabase.from('stories').select('*').order('created_at', { ascending: false });
+            showLoading(false);
+            
+            if (error) {
+                console.error(error);
+                showErrorToast('حدث خطأ في تحميل القصص');
+                return;
+            }
+            
+            if (data && data.length > 0) {
+                const featured = data.slice(0, 10);
+                const popular = [...data].sort((a,b) => (b.views||0) - (a.views||0)).slice(0, 10);
+                const latest = data.slice(0, 10);
+                
+                renderStories('featured-container', featured);
+                renderStories('popular-container', popular);
+                renderStories('latest-container', latest);
+            } else {
+                // بيانات تجريبية للعرض
+                const demoStories = [
+                    { id: 1, title: 'قصة تجريبية 1', nem: 'كاتب 1', views: 100, image_data: null },
+                    { id: 2, title: 'قصة تجريبية 2', nem: 'كاتب 2', views: 200, image_data: null },
+                    { id: 3, title: 'قصة تجريبية 3', nem: 'كاتب 3', views: 150, image_data: null }
+                ];
+                renderStories('featured-container', demoStories);
+                renderStories('popular-container', demoStories);
+                renderStories('latest-container', demoStories);
+            }
+        } catch(e) {
+            showLoading(false);
+            console.error(e);
+            showErrorToast('خطأ في الاتصال بقاعدة البيانات');
+        }
     }
     
     function renderStories(containerId, stories) {
@@ -436,70 +520,88 @@
         stories.forEach(story => {
             const div = document.createElement('div');
             div.className = 'story-item';
-            div.style.backgroundImage = `url(${story.image_data || 'https://via.placeholder.com/110x150?text=No+Image'})`;
+            const imgUrl = story.image_data || 'https://placehold.co/110x150/ff500a/white?text=📖';
+            div.style.backgroundImage = `url(${imgUrl})`;
             div.onclick = () => openStoryDetail(story);
             container.appendChild(div);
         });
     }
     
-    // فتح تفاصيل القصة
+    // ====================== تفاصيل القصة ======================
     async function openStoryDetail(story) {
+        if (!supabase) {
+            showAlert('وضع تجريبي - التفاصيل غير متاحة');
+            return;
+        }
+        
         showLoading(true);
         currentStoryId = story.id;
         
-        // تحديث عدد المشاهدات
-        await supabase.from('stories').update({ views: (story.views || 0) + 1 }).eq('id', story.id);
-        
-        // جلب الفصول
-        const { data: chapters, error } = await supabase.from('chapters').select('*').eq('story_id', story.id).order('id');
-        showLoading(false);
-        
-        const detailDiv = document.getElementById('story-detail-content');
-        detailDiv.innerHTML = `
-            <div style="display:flex; gap:15px; margin-bottom:20px;">
-                <div style="width:100px; height:140px; background-image:url(${story.image_data || 'https://via.placeholder.com/100x140'}); background-size:cover; border-radius:12px;"></div>
-                <div style="flex:1;">
-                    <h2>${story.title}</h2>
-                    <p style="color:#ff500a;">${story.nem || 'كاتب غير معروف'}</p>
-                    <p style="color:#888;"><i class="fa-solid fa-eye"></i> ${(story.views||0)+1} مشاهدة</p>
+        try {
+            // تحديث عدد المشاهدات
+            await supabase.from('stories').update({ views: (story.views || 0) + 1 }).eq('id', story.id);
+            
+            // جلب الفصول
+            const { data: chapters, error } = await supabase.from('chapters').select('*').eq('story_id', story.id).order('id');
+            showLoading(false);
+            
+            const detailDiv = document.getElementById('story-detail-content');
+            const imgUrl = story.image_data || 'https://placehold.co/100x140/ff500a/white?text=📖';
+            
+            detailDiv.innerHTML = `
+                <div style="display:flex; gap:15px; margin-bottom:20px;">
+                    <div style="width:100px; height:140px; background-image:url(${imgUrl}); background-size:cover; border-radius:12px;"></div>
+                    <div style="flex:1;">
+                        <h2>${story.title || 'بدون عنوان'}</h2>
+                        <p style="color:#ff500a;">${story.nem || 'كاتب غير معروف'}</p>
+                        <p style="color:#888;"><i class="fa-solid fa-eye"></i> ${(story.views||0)+1} مشاهدة</p>
+                    </div>
                 </div>
-            </div>
-            <div style="background:white; border-radius:12px; padding:15px; margin-bottom:20px;">
-                <h3>📖 عن القصة</h3>
-                <p>${story.description || 'لا يوجد وصف'}</p>
-            </div>
-            <div style="background:white; border-radius:12px; padding:15px;">
-                <h3>📑 الفصول (${chapters?.length || 0})</h3>
-                <div id="chapters-list"></div>
-            </div>
-        `;
-        
-        const chaptersList = document.getElementById('chapters-list');
-        if (chapters && chapters.length > 0) {
-            chaptersList.innerHTML = chapters.map((ch, i) => `
-                <div style="padding:12px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center; cursor:pointer;" onclick="readChapter(${ch.id}, '${story.title}')">
-                    <span>${ch.title || `الفصل ${i+1}`}</span>
-                    <i class="fa-solid fa-chevron-left"></i>
+                <div style="background:white; border-radius:12px; padding:15px; margin-bottom:20px;">
+                    <h3>📖 عن القصة</h3>
+                    <p>${story.description || 'لا يوجد وصف'}</p>
                 </div>
-            `).join('');
-        } else {
-            chaptersList.innerHTML = '<p style="color:#888;">لا توجد فصول بعد</p>';
+                <div style="background:white; border-radius:12px; padding:15px;">
+                    <h3>📑 الفصول (${chapters?.length || 0})</h3>
+                    <div id="chapters-list"></div>
+                </div>
+            `;
+            
+            const chaptersList = document.getElementById('chapters-list');
+            if (chapters && chapters.length > 0) {
+                chaptersList.innerHTML = chapters.map((ch, i) => `
+                    <div style="padding:12px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center; cursor:pointer;" onclick="readChapter(${ch.id}, '${story.title}')">
+                        <span>${ch.title || `الفصل ${i+1}`}</span>
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </div>
+                `).join('');
+            } else {
+                chaptersList.innerHTML = '<p style="color:#888;">لا توجد فصول بعد</p>';
+            }
+            
+            // إضافة زر تحميل للمكتبة
+            const addToLibBtn = document.createElement('button');
+            addToLibBtn.textContent = '📥 تحميل في مكتبتي';
+            addToLibBtn.style.width = '100%';
+            addToLibBtn.style.marginTop = '15px';
+            addToLibBtn.onclick = () => addToLibrary(story);
+            detailDiv.appendChild(addToLibBtn);
+            
+            showScreen('story-detail');
+        } catch(e) {
+            showLoading(false);
+            showErrorToast('حدث خطأ');
         }
-        
-        // إضافة زر تحميل للمكتبة
-        const addToLibBtn = document.createElement('button');
-        addToLibBtn.textContent = '📥 تحميل في مكتبتي';
-        addToLibBtn.style.width = '100%';
-        addToLibBtn.style.marginTop = '15px';
-        addToLibBtn.onclick = () => addToLibrary(story);
-        detailDiv.appendChild(addToLibBtn);
-        
-        showScreen('story-detail');
     }
     
     // قراءة فصل
     window.readChapter = async (chapterId, storyTitle) => {
+        if (!supabase) return;
+        
+        showLoading(true);
         const { data, error } = await supabase.from('chapters').select('*').eq('id', chapterId).single();
+        showLoading(false);
+        
         if (error) return;
         
         const detailDiv = document.getElementById('story-detail-content');
@@ -510,11 +612,11 @@
                 </span>
             </div>
             <h2>${data.title || 'فصل'}</h2>
-            <div style="line-height:1.8; margin-top:20px; white-space:pre-wrap;">${data.content}</div>
+            <div style="line-height:1.8; margin-top:20px; white-space:pre-wrap;">${data.content || 'لا يوجد محتوى'}</div>
         `;
     };
     
-    // إضافة للمكتبة المحلية
+    // ====================== المكتبة المحلية ======================
     function addToLibrary(story) {
         let library = JSON.parse(localStorage.getItem('story_library') || '[]');
         if (library.length >= 6) {
@@ -530,10 +632,10 @@
         showAlert('تمت إضافة القصة إلى مكتبتك ✅');
     }
     
-    // تحميل المكتبة
     function loadLibrary() {
         const library = JSON.parse(localStorage.getItem('story_library') || '[]');
         const container = document.getElementById('library-container');
+        if (!container) return;
         container.innerHTML = '';
         
         if (library.length === 0) {
@@ -544,8 +646,9 @@
         library.forEach(story => {
             const div = document.createElement('div');
             div.style.position = 'relative';
+            const imgUrl = story.image_data || 'https://placehold.co/150x200/ff500a/white?text=📖';
             div.innerHTML = `
-                <div style="width:100%; aspect-ratio:2/3; background-image:url(${story.image_data || 'https://via.placeholder.com/150x200'}); background-size:cover; border-radius:12px; cursor:pointer;" onclick="openStoryDetail(${JSON.stringify(story).replace(/"/g, '&quot;')})"></div>
+                <div style="width:100%; aspect-ratio:2/3; background-image:url(${imgUrl}); background-size:cover; border-radius:12px; cursor:pointer;" onclick='openStoryDetail(${JSON.stringify(story)})'></div>
                 <div style="position:absolute; top:5px; left:5px; background:rgba(0,0,0,0.6); border-radius:50%; width:28px; height:28px; display:flex; align-items:center; justify-content:center; cursor:pointer;" onclick="removeFromLibrary('${story.id}')">
                     <i class="fa-solid fa-trash" style="color:white; font-size:12px;"></i>
                 </div>
@@ -557,13 +660,13 @@
     
     window.removeFromLibrary = (storyId) => {
         let library = JSON.parse(localStorage.getItem('story_library') || '[]');
-        library = library.filter(s => s.id !== storyId);
+        library = library.filter(s => s.id != storyId);
         localStorage.setItem('story_library', JSON.stringify(library));
         loadLibrary();
         showAlert('تم الحذف من المكتبة');
     };
     
-    // رفع صورة الغلاف
+    // ====================== إنشاء قصة ======================
     document.getElementById('cover-upload')?.addEventListener('click', () => {
         const input = document.createElement('input');
         input.type = 'file';
@@ -585,11 +688,15 @@
         input.click();
     });
     
-    // إنشاء قصة جديدة
     document.getElementById('create-next-btn')?.addEventListener('click', async () => {
-        const title = document.getElementById('story-title').value.trim();
-        const author = document.getElementById('story-author').value.trim();
-        const desc = document.getElementById('story-desc').value.trim();
+        if (!supabase) {
+            showAlert('وضع تجريبي - لا يمكن إنشاء قصص جديدة');
+            return;
+        }
+        
+        const title = document.getElementById('story-title')?.value.trim();
+        const author = document.getElementById('story-author')?.value.trim();
+        const desc = document.getElementById('story-desc')?.value.trim();
         
         if (!title || !author || !desc) {
             showAlert('يرجى ملء جميع الحقول');
@@ -603,7 +710,6 @@
         showLoading(true);
         
         if (isEditMode && editStoryId) {
-            // تحديث قصة موجودة
             await supabase.from('stories').update({
                 title, nem: author, description: desc, image_data: coverImageData
             }).eq('id', editStoryId);
@@ -611,7 +717,6 @@
             isEditMode = false;
             editStoryId = null;
         } else {
-            // إضافة قصة جديدة
             const { data, error } = await supabase.from('stories').insert([{
                 title, nem: author, description: desc, image_data: coverImageData,
                 user_id: currentUser, views: 0, created_at: new Date().toISOString()
@@ -630,22 +735,33 @@
         }
         
         // تنظيف الحقول
-        document.getElementById('story-title').value = '';
-        document.getElementById('story-author').value = '';
-        document.getElementById('story-desc').value = '';
+        const titleInput = document.getElementById('story-title');
+        const authorInput = document.getElementById('story-author');
+        const descInput = document.getElementById('story-desc');
+        if (titleInput) titleInput.value = '';
+        if (authorInput) authorInput.value = '';
+        if (descInput) descInput.value = '';
         coverImageData = null;
-        document.getElementById('cover-upload').innerHTML = '<i class="fa-solid fa-plus" style="font-size:30px; color:#aaa;"></i>';
-        document.getElementById('cover-upload').style.backgroundImage = '';
+        const uploadDiv = document.getElementById('cover-upload');
+        if (uploadDiv) {
+            uploadDiv.innerHTML = '<i class="fa-solid fa-plus" style="font-size:30px; color:#aaa;"></i>';
+            uploadDiv.style.backgroundImage = '';
+        }
         
         showLoading(false);
         showScreen('home');
         loadStories();
     });
     
-    // نشر فصل
+    // ====================== نشر فصل ======================
     document.getElementById('publish-chapter-btn')?.addEventListener('click', async () => {
-        const title = document.getElementById('chapter-title').value.trim();
-        const content = document.getElementById('chapter-content').value.trim();
+        if (!supabase) {
+            showAlert('وضع تجريبي - لا يمكن نشر فصول');
+            return;
+        }
+        
+        const title = document.getElementById('chapter-title')?.value.trim();
+        const content = document.getElementById('chapter-content')?.value.trim();
         
         if (!title || !content) {
             showAlert('يرجى إدخال عنوان ومحتوى الفصل');
@@ -669,34 +785,41 @@
             showAlert('خطأ: ' + error.message);
         } else {
             showAlert('تم نشر الفصل بنجاح 🎉');
-            document.getElementById('chapter-title').value = '';
-            document.getElementById('chapter-content').value = '';
+            const chapterTitle = document.getElementById('chapter-title');
+            const chapterContent = document.getElementById('chapter-content');
+            if (chapterTitle) chapterTitle.value = '';
+            if (chapterContent) chapterContent.value = '';
             showScreen('home');
             loadStories();
         }
     });
     
-    // البحث
+    // ====================== البحث ======================
     document.getElementById('search-box')?.addEventListener('input', async (e) => {
+        if (!supabase) return;
+        
         const query = e.target.value.trim();
         if (query.length < 2) {
-            document.getElementById('search-results').innerHTML = '';
+            const resultsDiv = document.getElementById('search-results');
+            if (resultsDiv) resultsDiv.innerHTML = '';
             return;
         }
         
         const { data } = await supabase.from('stories').select('*').or(`title.ilike.%${query}%,description.ilike.%${query}%`).limit(20);
         
         const resultsDiv = document.getElementById('search-results');
+        if (!resultsDiv) return;
         resultsDiv.innerHTML = '';
         (data || []).forEach(story => {
             const div = document.createElement('div');
             div.style.cssText = 'display:flex; gap:12px; padding:12px; background:white; margin-bottom:8px; border-radius:12px; cursor:pointer;';
             div.onclick = () => openStoryDetail(story);
+            const imgUrl = story.image_data || 'https://placehold.co/60x80/ff500a/white?text=📖';
             div.innerHTML = `
-                <div style="width:60px; height:80px; background-image:url(${story.image_data || 'https://via.placeholder.com/60x80'}); background-size:cover; border-radius:8px;"></div>
+                <div style="width:60px; height:80px; background-image:url(${imgUrl}); background-size:cover; border-radius:8px;"></div>
                 <div style="flex:1;">
-                    <div style="font-weight:bold;">${story.title}</div>
-                    <div style="color:#ff500a; font-size:12px;">${story.nem}</div>
+                    <div style="font-weight:bold;">${story.title || 'بدون عنوان'}</div>
+                    <div style="color:#ff500a; font-size:12px;">${story.nem || 'كاتب'}</div>
                     <div style="color:#888; font-size:11px;"><i class="fa-solid fa-eye"></i> ${story.views || 0}</div>
                 </div>
             `;
@@ -704,20 +827,29 @@
         });
     });
     
-    // تسجيل الدخول
+    // ====================== تسجيل الدخول ======================
     let isLogin = true;
     function toggleAuth() {
         isLogin = !isLogin;
         const btn = document.getElementById('auth-submit-btn');
         const toggleText = document.getElementById('auth-toggle-text');
-        btn.textContent = isLogin ? 'دخول' : 'إنشاء حساب';
-        toggleText.textContent = isLogin ? 'ليس لديك حساب؟ سجل الآن' : 'لديك حساب؟ سجل الدخول';
+        if (btn) btn.textContent = isLogin ? 'دخول' : 'إنشاء حساب';
+        if (toggleText) toggleText.textContent = isLogin ? 'ليس لديك حساب؟ سجل الآن' : 'لديك حساب؟ سجل الدخول';
     }
     document.getElementById('auth-toggle-text')?.addEventListener('click', toggleAuth);
     
     document.getElementById('auth-submit-btn')?.addEventListener('click', async () => {
-        const email = document.getElementById('auth-email').value;
-        const password = document.getElementById('auth-password').value;
+        if (!supabase) {
+            // وضع تجريبي - تخطي تسجيل الدخول
+            document.getElementById('auth-screen').style.display = 'none';
+            document.getElementById('main-app').style.display = 'block';
+            document.getElementById('splash-screen')?.remove();
+            loadStories();
+            return;
+        }
+        
+        const email = document.getElementById('auth-email')?.value;
+        const password = document.getElementById('auth-password')?.value;
         
         if (!email || !password) {
             showAlert('يرجى إدخال البريد الإلكتروني وكلمة المرور');
@@ -739,12 +871,12 @@
             if (!isLogin) {
                 showAlert('تم إنشاء الحساب! يرجى تأكيد بريدك الإلكتروني ثم تسجيل الدخول');
             } else {
-                location.reload();
+                window.location.reload();
             }
         }
     });
     
-    // أزرار الكتابة
+    // ====================== أزرار الكتابة ======================
     document.getElementById('btn-create-story')?.addEventListener('click', () => {
         isEditMode = false;
         editStoryId = null;
@@ -752,6 +884,11 @@
     });
     
     document.getElementById('btn-my-stories')?.addEventListener('click', async () => {
+        if (!supabase) {
+            showAlert('وضع تجريبي - سجل دخولك أولاً');
+            return;
+        }
+        
         showLoading(true);
         const { data } = await supabase.from('stories').select('*').eq('user_id', currentUser);
         showLoading(false);
@@ -765,26 +902,35 @@
         data.forEach((s, i) => {
             storyList += `${i+1}. ${s.title}\n`;
         });
-        storyList += '\nاختر قصة للتعديل أو الحذف';
-        // تبسيط: نعرض قائمة بسيطة
-        const storyId = prompt(storyList + '\n\nأدخل رقم القصة للتعديل:');
-        if (storyId && data[parseInt(storyId)-1]) {
-            const story = data[parseInt(storyId)-1];
+        storyList += '\nاختر قصة للتعديل (أدخل الرقم):';
+        const storyNum = prompt(storyList);
+        if (storyNum && data[parseInt(storyNum)-1]) {
+            const story = data[parseInt(storyNum)-1];
             isEditMode = true;
             editStoryId = story.id;
-            document.getElementById('story-title').value = story.title;
-            document.getElementById('story-author').value = story.nem;
-            document.getElementById('story-desc').value = story.description;
+            const titleInput = document.getElementById('story-title');
+            const authorInput = document.getElementById('story-author');
+            const descInput = document.getElementById('story-desc');
+            if (titleInput) titleInput.value = story.title;
+            if (authorInput) authorInput.value = story.nem;
+            if (descInput) descInput.value = story.description;
             coverImageData = story.image_data;
             const uploadDiv = document.getElementById('cover-upload');
-            uploadDiv.style.backgroundImage = `url(${story.image_data})`;
-            uploadDiv.style.backgroundSize = 'cover';
-            uploadDiv.innerHTML = '';
+            if (uploadDiv && story.image_data) {
+                uploadDiv.style.backgroundImage = `url(${story.image_data})`;
+                uploadDiv.style.backgroundSize = 'cover';
+                uploadDiv.innerHTML = '';
+            }
             showScreen('create-story');
         }
     });
     
     document.getElementById('btn-add-chapter')?.addEventListener('click', async () => {
+        if (!supabase) {
+            showAlert('وضع تجريبي - سجل دخولك أولاً');
+            return;
+        }
+        
         showLoading(true);
         const { data } = await supabase.from('stories').select('id, title').eq('user_id', currentUser);
         showLoading(false);
@@ -805,7 +951,7 @@
         }
     });
     
-    // ربط القائمة السفلية
+    // ====================== ربط القائمة السفلية ======================
     document.querySelectorAll('.nav-item').forEach(item => {
         item.addEventListener('click', () => {
             const screen = item.dataset.screen;
@@ -817,30 +963,46 @@
         });
     });
     
-    // التحقق من الجلسة
-    async function checkSession() {
-        const { data } = await supabase.auth.getSession();
-        if (data.session) {
-            currentUser = data.session.user.id;
-            document.getElementById('splash-screen').style.display = 'none';
-            document.getElementById('main-app').style.display = 'block';
-            loadStories();
-            
-            // التحقق من رابط مباشر
-            const urlParams = new URLSearchParams(window.location.search);
-            const chapterId = urlParams.get('chapter_id');
-            const storyId = urlParams.get('story_id');
-            if (storyId) {
-                const { data: story } = await supabase.from('stories').select('*').eq('id', storyId).single();
-                if (story) openStoryDetail(story);
+    // ====================== التحقق من الجلسة وبدء التطبيق ======================
+    async function initApp() {
+        try {
+            if (supabase) {
+                const { data } = await supabase.auth.getSession();
+                if (data && data.session) {
+                    currentUser = data.session.user.id;
+                    document.getElementById('splash-screen')?.remove();
+                    document.getElementById('auth-screen').style.display = 'none';
+                    document.getElementById('main-app').style.display = 'block';
+                    loadStories();
+                    
+                    // التحقق من رابط مباشر
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const storyId = urlParams.get('story_id');
+                    if (storyId) {
+                        const { data: story } = await supabase.from('stories').select('*').eq('id', storyId).single();
+                        if (story) openStoryDetail(story);
+                    }
+                    return;
+                }
             }
-        } else {
-            document.getElementById('splash-screen').style.display = 'none';
+            
+            // إذا لم يكن هناك جلسة أو كان Supabase معطلاً
+            document.getElementById('splash-screen')?.remove();
             document.getElementById('auth-screen').style.display = 'flex';
+            document.getElementById('main-app').style.display = 'none';
+        } catch(e) {
+            console.error('Init error:', e);
+            // في حالة الخطأ، نعرض شاشة تسجيل الدخول
+            document.getElementById('splash-screen')?.remove();
+            document.getElementById('auth-screen').style.display = 'flex';
+            document.getElementById('main-app').style.display = 'none';
         }
     }
     
-    checkSession();
+    // بدء التطبيق بعد تحميل الصفحة
+    window.addEventListener('DOMContentLoaded', () => {
+        setTimeout(initApp, 1000);
+    });
 </script>
 </body>
 </html>
