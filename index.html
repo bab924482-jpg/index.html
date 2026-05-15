@@ -1,940 +1,523 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html dir="rtl" lang="ar">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Wattpad - أين تكمن القصص</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: 'Tajawal', 'Cairo', sans-serif;
-      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      padding: 12px;
-    }
-
-    .app-container {
-      max-width: 420px;
-      width: 100%;
-      height: 92vh;
-      max-height: 850px;
-      background: #ffffff;
-      border-radius: 36px;
-      box-shadow: 0 30px 60px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,140,0,0.3);
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      position: relative;
-    }
-
-    /* شاشة تسجيل الدخول */
-    .login-screen {
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-      background: linear-gradient(180deg, #fff5eb 0%, #ffffff 40%);
-      padding: 30px 24px;
-      align-items: center;
-      justify-content: center;
-      gap: 24px;
-    }
-
-    .login-logo {
-      font-family: 'Cairo', sans-serif;
-      font-weight: 800;
-      font-size: 48px;
-      background: linear-gradient(135deg, #ff5e00, #ff8c00);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      margin-bottom: 8px;
-    }
-
-    .login-subtitle {
-      color: #7f6e5d;
-      font-size: 16px;
-      text-align: center;
-      margin-top: -10px;
-    }
-
-    .input-group {
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .input-group label {
-      font-weight: 700;
-      font-size: 14px;
-      color: #2d2416;
-    }
-
-    .input-group input {
-      width: 100%;
-      padding: 14px 16px;
-      border: 2px solid #e8dfd1;
-      border-radius: 16px;
-      font-family: 'Tajawal', sans-serif;
-      font-size: 15px;
-      background: white;
-      transition: 0.2s;
-      outline: none;
-    }
-
-    .input-group input:focus {
-      border-color: #ff8c00;
-      box-shadow: 0 0 0 3px rgba(255,140,0,0.1);
-    }
-
-    .btn-primary {
-      width: 100%;
-      padding: 16px;
-      background: linear-gradient(135deg, #ff5e00, #ff8c00);
-      color: white;
-      border: none;
-      border-radius: 30px;
-      font-weight: 700;
-      font-size: 17px;
-      font-family: 'Cairo', sans-serif;
-      cursor: pointer;
-      transition: 0.3s;
-      box-shadow: 0 8px 20px rgba(255,94,0,0.3);
-      margin-top: 8px;
-    }
-
-    .btn-primary:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 12px 28px rgba(255,94,0,0.4);
-    }
-
-    .btn-secondary {
-      width: 100%;
-      padding: 14px;
-      background: white;
-      color: #ff5e00;
-      border: 2px solid #ff8c00;
-      border-radius: 30px;
-      font-weight: 700;
-      font-size: 16px;
-      font-family: 'Cairo', sans-serif;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-
-    .divider {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      width: 100%;
-      color: #b8a68b;
-      font-size: 13px;
-    }
-
-    .divider::before, .divider::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: #e8dfd1;
-    }
-
-    .social-buttons {
-      display: flex;
-      gap: 12px;
-      width: 100%;
-    }
-
-    .social-btn {
-      flex: 1;
-      padding: 12px;
-      border: 2px solid #e8dfd1;
-      border-radius: 16px;
-      background: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      font-weight: 600;
-      font-size: 14px;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-
-    .social-btn:hover {
-      background: #faf7f2;
-    }
-
-    /* شريط الحالة */
-    .status-bar {
-      background: #ffffff;
-      padding: 10px 20px 4px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-weight: 700;
-      font-size: 13px;
-      color: #1e1e1e;
-      border-bottom: 1px solid #f0ece4;
-    }
-
-    .header {
-      background: #fff;
-      padding: 10px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid #f0ece4;
-    }
-
-    .logo {
-      font-family: 'Cairo', sans-serif;
-      font-weight: 800;
-      font-size: 26px;
-      background: linear-gradient(135deg, #ff6b00, #ff8c00);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      letter-spacing: -0.5px;
-    }
-
-    .header-icons {
-      display: flex;
-      gap: 18px;
-      color: #555;
-      font-size: 20px;
-    }
-
-    .header-icons i {
-      cursor: pointer;
-      transition: 0.2s;
-    }
-
-    .header-icons i:hover {
-      color: #ff6b00;
-    }
-
-    .main-content {
-      flex: 1;
-      overflow-y: auto;
-      padding: 16px 16px 8px;
-      background: #faf9f7;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
-
-    .greeting {
-      background: linear-gradient(135deg, #fff7ed, #ffffff);
-      border-radius: 24px;
-      padding: 16px 18px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.02);
-      border: 1px solid #ffe0c0;
-    }
-
-    .greeting-text h3 {
-      font-weight: 700;
-      font-size: 18px;
-      color: #1e1e1e;
-    }
-
-    .greeting-text p {
-      color: #6b5e4a;
-      font-size: 14px;
-      margin-top: 4px;
-    }
-
-    .greeting-icon {
-      background: #ff8c00;
-      color: white;
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 22px;
-    }
-
-    .search-bar {
-      background: white;
-      border-radius: 30px;
-      padding: 12px 18px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      border: 1px solid #e8dfd1;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.02);
-    }
-
-    .search-bar i {
-      color: #b8a68b;
-      font-size: 18px;
-    }
-
-    .search-bar input {
-      flex: 1;
-      border: none;
-      background: transparent;
-      font-family: 'Tajawal', sans-serif;
-      font-size: 15px;
-      outline: none;
-    }
-
-    .section-title {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 4px;
-    }
-
-    .section-title h4 {
-      font-weight: 700;
-      font-size: 17px;
-      color: #2d2416;
-    }
-
-    .section-title span {
-      color: #ff6b00;
-      font-weight: 600;
-      font-size: 13px;
-      cursor: pointer;
-    }
-
-    .tags-scroll {
-      display: flex;
-      gap: 10px;
-      overflow-x: auto;
-      padding-bottom: 6px;
-      white-space: nowrap;
-    }
-
-    .tag {
-      background: white;
-      border: 1px solid #e8dfd1;
-      padding: 8px 18px;
-      border-radius: 30px;
-      font-weight: 600;
-      font-size: 13px;
-      color: #4a3f32;
-      transition: all 0.2s;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .tag i { color: #ff8c00; font-size: 14px; }
-    .tag.active { background: #ff6b00; color: white; border-color: #ff6b00; }
-    .tag.active i { color: white; }
-
-    .stories-row {
-      display: flex;
-      gap: 14px;
-      overflow-x: auto;
-      padding-bottom: 8px;
-    }
-
-    .story-card {
-      min-width: 110px;
-      background: white;
-      border-radius: 16px;
-      padding: 10px;
-      box-shadow: 0 6px 14px rgba(0,0,0,0.04);
-      border: 1px solid #f0e8da;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      cursor: pointer;
-      transition: transform 0.2s;
-    }
-
-    .story-card:hover { transform: translateY(-3px); }
-
-    .story-cover {
-      width: 85px;
-      height: 115px;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-weight: bold;
-      font-size: 28px;
-      margin-bottom: 8px;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .story-cover.cover1 { background: linear-gradient(135deg, #c94b4b, #8b0000); }
-    .story-cover.cover2 { background: linear-gradient(135deg, #4b6cb7, #182848); }
-    .story-cover.cover3 { background: linear-gradient(135deg, #d4a373, #b5835a); }
-    .story-cover.cover4 { background: linear-gradient(135deg, #6d597a, #4a3f5c); }
-
-    .story-title {
-      font-weight: 700;
-      font-size: 13px;
-      color: #2d2416;
-      text-align: center;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 90px;
-    }
-
-    .story-author { font-size: 11px; color: #9b8c7c; margin-top: 2px; }
-
-    .suggested-list { display: flex; flex-direction: column; gap: 14px; }
-
-    .suggested-item {
-      display: flex;
-      gap: 14px;
-      background: white;
-      border-radius: 18px;
-      padding: 12px;
-      align-items: center;
-      border: 1px solid #f0e8da;
-      cursor: pointer;
-    }
-
-    .small-cover {
-      width: 60px;
-      height: 80px;
-      background: linear-gradient(135deg, #c49a6c, #8b6b4b);
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-size: 22px;
-    }
-
-    .item-info { flex: 1; }
-    .item-info h5 { font-weight: 700; font-size: 15px; }
-    .item-info p { font-size: 12px; color: #7f6e5d; }
-
-    .reads {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      font-size: 11px;
-      color: #ff8c00;
-      margin-top: 4px;
-    }
-
-    .bottom-nav {
-      background: #ffffff;
-      padding: 8px 16px 12px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-top: 1px solid #f0ece4;
-    }
-
-    .nav-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 3px;
-      color: #b8a68b;
-      font-size: 12px;
-      cursor: pointer;
-      font-weight: 500;
-    }
-
-    .nav-item i { font-size: 22px; }
-    .nav-item.active { color: #ff6b00; font-weight: 700; }
-    .nav-item span { font-size: 10px; }
-
-    /* صفحات ثانوية */
-    .page {
-      display: none;
-      flex-direction: column;
-      height: 100%;
-      background: #fdfaf5;
-    }
-
-    .page.active-page {
-      display: flex;
-    }
-
-    .page-header {
-      padding: 16px;
-      background: white;
-      display: flex;
-      align-items: center;
-      gap: 15px;
-      border-bottom: 1px solid #eee;
-    }
-
-    .back-btn {
-      font-size: 20px;
-      color: #2d2416;
-      cursor: pointer;
-    }
-
-    .page-content {
-      flex: 1;
-      overflow-y: auto;
-      padding: 20px;
-    }
-
-    /* إنشاء قصة */
-    .create-form {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-
-    .create-form input, .create-form textarea, .create-form select {
-      width: 100%;
-      padding: 14px;
-      border: 2px solid #e8dfd1;
-      border-radius: 16px;
-      font-family: 'Tajawal', sans-serif;
-      font-size: 15px;
-      background: white;
-      outline: none;
-    }
-
-    .create-form textarea {
-      min-height: 120px;
-      resize: vertical;
-    }
-
-    .create-form input:focus, .create-form textarea:focus {
-      border-color: #ff8c00;
-    }
-
-    /* المكتبة */
-    .library-item {
-      display: flex;
-      gap: 14px;
-      background: white;
-      border-radius: 18px;
-      padding: 12px;
-      align-items: center;
-      border: 1px solid #f0e8da;
-      margin-bottom: 12px;
-    }
-
-    .progress-bar {
-      height: 6px;
-      background: #e8dfd1;
-      border-radius: 10px;
-      margin-top: 6px;
-      overflow: hidden;
-    }
-
-    .progress-fill {
-      height: 100%;
-      background: #ff8c00;
-      border-radius: 10px;
-    }
-
-    /* الملف الشخصي */
-    .profile-avatar {
-      width: 80px;
-      height: 80px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #ff8c00, #ff5e00);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-size: 36px;
-      margin: 0 auto;
-    }
-
-    .stat-box {
-      background: white;
-      border-radius: 16px;
-      padding: 14px;
-      text-align: center;
-      border: 1px solid #f0e8da;
-    }
-
-    .hidden {
-      display: none !important;
-    }
-
-    .flex-col {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .full-height {
-      height: 100%;
-    }
-  </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { margin: 0; padding-bottom: 70px; font-family: sans-serif; -webkit-tap-highlight-color: transparent; background: #f8f9fa; }
+        #auth-screen { display: none; height: 100vh; flex-direction: column; justify-content: center; padding: 20px; }
+        .auth-container { width: 100%; max-width: 400px; margin: 0 auto; }
+        .shelf { margin: 20px 10px; }
+        .shelf-title { font-weight: bold; margin-bottom: 10px; }
+        .scroll-container { display: flex; overflow-x: auto; gap: 10px; padding-bottom: 10px; scroll-behavior: smooth; }
+        .story-item { min-width: 100px; height: 140px; background-color: #ddd; border-radius: 8px; background-size: cover; background-position: center; cursor: pointer; box-sizing: border-box; transition: transform 0.2s, box-shadow 0.2s; }
+        .story-item:hover { transform: scale(1.02); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        
+        /* شاشات مع تأثيرات انتقالية */
+        .screen { display: none; animation: fadeSlideIn 0.3s ease-out; will-change: opacity, transform; }
+        .screen.active { display: block; }
+        
+        @keyframes fadeSlideIn {
+            from { opacity: 0; transform: translateX(10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        @keyframes fadeSlideOut {
+            from { opacity: 1; transform: translateX(0); }
+            to { opacity: 0; transform: translateX(-10px); }
+        }
+        
+        .screen-exit { animation: fadeSlideOut 0.2s ease-in; }
+        
+        #write-screen, #create-story-screen, #editor-screen, #story-detail-screen, #select-story-screen, #edit-option-screen, #library-screen, #search-screen { padding: 20px; }
+        .menu-item { padding: 20px 0; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; cursor: pointer; transition: background 0.2s, padding-right 0.2s; }
+        .menu-item:active { background: #f0f0f0; padding-right: 8px; }
+        
+        .top-bar { display: flex; justify-content: space-between; padding: 10px; align-items: center; background: white; position: sticky; top: 0; z-index: 100; backdrop-filter: blur(10px); background: rgba(255,255,255,0.95); }
+        .next-btn { color: #000; font-weight: bold; cursor: pointer; transition: all 0.2s; }
+        .next-btn.active { color: #ff500a; }
+
+        .upload-box { width: 100px; height: 130px; border: 1px dashed #ccc; display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 20px; cursor: pointer; overflow: hidden; transition: border-color 0.2s; background: #fafafa; border-radius: 12px; }
+        .upload-box:active { border-color: #ff500a; background: #fff0e6; }
+        
+        input[type="text"], input[type="email"], input[type="password"], textarea { width: 100%; box-sizing: border-box; margin-bottom: 15px; padding: 12px; border: 1px solid #e0e0e0; border-radius: 10px; transition: border-color 0.2s, box-shadow 0.2s; font-size: 14px; background: white; }
+        input:focus, textarea:focus { border-color: #ff500a; outline: none; box-shadow: 0 0 0 2px rgba(255,80,10,0.1); }
+        textarea { min-height: 200px; resize: vertical; }
+
+        .editor-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        
+        #publish-btn { background-color: #ff500a; color: white; padding: 8px 25px; border-radius: 20px; cursor: pointer; font-weight: bold; border: none; transition: transform 0.2s, opacity 0.2s; }
+        #publish-btn:active { transform: scale(0.96); }
+        #publish-btn:disabled { background-color: #ccc; cursor: not-allowed; transform: none; }
+
+        .image-preview { margin-top: 10px; margin-bottom: 10px; position: relative; display: inline-block; }
+        .image-preview img { max-width: 100%; border-radius: 8px; display: block; }
+        
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; height: 65px; background-color: rgba(255,255,255,0.96); backdrop-filter: blur(10px); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #e0e0e0; padding-bottom: 5px; z-index: 999; transition: transform 0.3s; }
+        .nav-item { color: #888; font-size: 22px; cursor: pointer; display: flex; flex-direction: column; align-items: center; transition: color 0.2s, transform 0.1s; -webkit-tap-highlight-color: transparent; }
+        .nav-item:active { transform: scale(0.92); }
+        .nav-item.center-pen { background-color: #ff500a; color: white; width: 50px; height: 50px; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(255, 80, 10, 0.4); transition: transform 0.2s, box-shadow 0.2s; }
+        .nav-item.center-pen:active { transform: scale(0.92); box-shadow: 0 2px 6px rgba(255,80,10,0.4); }
+        .nav-item.active { color: #ff500a; }
+        
+        #story-detail-screen { padding: 0; }
+        .detail-img { width: 110px; height: 160px; background-size: cover; background-position: center; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); flex-shrink: 0; transition: transform 0.3s; }
+        
+        .search-list-item { display: flex; padding: 12px; border-bottom: 1px solid #eee; align-items: center; cursor: pointer; transition: background 0.2s; border-radius: 12px; margin: 4px 0; }
+        .search-list-item:active { background: #f5f5f5; }
+        .search-item-img { width: 70px; height: 100px; background-size: cover; background-position: center; border-radius: 8px; margin-left: 15px; }
+        .search-item-info { display: flex; flex-direction: column; gap: 5px; }
+
+        #custom-alert-modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; justify-content:center; align-items:center; backdrop-filter: blur(4px); }
+        .alert-box { background:white; padding:20px; border-radius:16px; text-align:center; width: 80%; max-width: 300px; animation: popIn 0.2s ease-out; }
+        @keyframes popIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+        .alert-btn { margin-top:20px; padding:12px 20px; background:#ff500a; color:white; border:none; border-radius:25px; cursor:pointer; width: 100%; font-weight: bold; transition: opacity 0.2s; }
+        .alert-btn:active { opacity: 0.8; }
+
+        #loading-spinner { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1000; }
+        .spinner { width: 50px; height: 50px; border: 4px solid #f3f3f3; border-top: 4px solid #ff500a; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* تحسينات إضافية */
+        .chapter-item { padding: 15px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: background 0.2s, padding-right 0.2s; border-radius: 10px; }
+        .chapter-item:active { background: #f5f5f5; padding-right: 8px; }
+        
+        button { cursor: pointer; transition: opacity 0.2s, transform 0.1s; }
+        button:active { transform: scale(0.97); }
+        
+        #search-box { padding: 12px 15px; border-radius: 30px; background: #f2f2f2; border: none; }
+        
+        /* مؤشر السحب */
+        .scroll-container::-webkit-scrollbar { height: 4px; }
+        .scroll-container::-webkit-scrollbar-track { background: #eee; border-radius: 4px; }
+        .scroll-container::-webkit-scrollbar-thumb { background: #ff500a; border-radius: 4px; }
+    </style>
 </head>
 <body>
-  <div class="app-container" id="appContainer">
-    <!-- شاشة تسجيل الدخول -->
-    <div id="loginScreen" class="login-screen">
-      <div class="login-logo">Wattpad</div>
-      <p class="login-subtitle">أين تكمن القصص</p>
 
-      <div class="input-group">
-        <label>البريد الإلكتروني</label>
-        <input type="email" id="emailInput" placeholder="example@email.com" value="قارئ@wattpad.com">
-      </div>
+    <div id="loading-spinner"><div class="spinner"></div></div>
 
-      <div class="input-group">
-        <label>كلمة المرور</label>
-        <input type="password" id="passwordInput" placeholder="••••••••" value="123456">
-      </div>
-
-      <button class="btn-primary" onclick="login()">
-        <i class="fas fa-sign-in-alt"></i> تسجيل الدخول
-      </button>
-
-      <div class="divider">أو</div>
-
-      <div class="social-buttons">
-        <div class="social-btn"><i class="fab fa-google" style="color:#ea4335;"></i> Google</div>
-        <div class="social-btn"><i class="fab fa-facebook-f" style="color:#1877f2;"></i> Facebook</div>
-      </div>
-
-      <p style="color:#7f6e5d; font-size:13px;">ليس لديك حساب؟ <span style="color:#ff5e00; font-weight:700; cursor:pointer;" onclick="quickLogin()">إنشاء حساب جديد</span></p>
+    <div id="auth-screen">
+        <div class="auth-container">
+            <h2 id="auth-title" style="text-align:center;">تسجيل الدخول</h2>
+            <input type="email" id="auth-email" placeholder="البريد الإلكتروني">
+            <input type="password" id="auth-password" placeholder="كلمة المرور">
+            <button id="auth-submit-btn" style="width:100%; background:#ff500a; color:white; border:none; padding:12px; border-radius:30px; font-weight:bold; cursor:pointer;">دخول</button>
+            <p id="auth-toggle-text" onclick="toggleAuthMode()" style="text-align:center; cursor:pointer; color:#ff500a; margin-top:15px;">ليس لديك حساب؟ سجل الآن</p>
+        </div>
     </div>
 
-    <!-- الواجهة الرئيسية -->
-    <div id="homeView" class="flex-col full-height hidden">
-      <div class="status-bar">
-        <span>9:41</span>
-        <span><i class="fas fa-signal"></i> <i class="fas fa-wifi"></i> <i class="fas fa-battery-full"></i></span>
-      </div>
-      <div class="header">
-        <div class="logo">Wattpad</div>
-        <div class="header-icons">
-          <i class="far fa-bell"></i>
-          <i class="fas fa-user-circle" onclick="navigateTo('profilePage')"></i>
+    <div id="custom-alert-modal">
+        <div class="alert-box">
+            <p id="alert-message"></p>
+            <button class="alert-btn" onclick="closeCustomAlert()">موافق</button>
         </div>
-      </div>
-
-      <div class="main-content">
-        <div class="greeting">
-          <div class="greeting-text">
-            <h3 id="greetingName">مساء الخير، قارئ</h3>
-            <p>اكتشف قصصًا جديدة اليوم</p>
-          </div>
-          <div class="greeting-icon"><i class="fas fa-book-open"></i></div>
-        </div>
-
-        <div class="search-bar">
-          <i class="fas fa-search"></i>
-          <input type="text" placeholder="ابحث عن قصة أو كاتب...">
-        </div>
-
-        <div>
-          <div class="section-title"><h4>تصفح الفئات</h4><span>عرض الكل</span></div>
-          <div class="tags-scroll">
-            <span class="tag active"><i class="fas fa-fire"></i> رائجة</span>
-            <span class="tag"><i class="fas fa-heart"></i> رومانسية</span>
-            <span class="tag"><i class="fas fa-ghost"></i> غموض</span>
-            <span class="tag"><i class="fas fa-hat-wizard"></i> فانتازيا</span>
-            <span class="tag"><i class="fas fa-star"></i> جديدة</span>
-          </div>
-        </div>
-
-        <div>
-          <div class="section-title"><h4>الأكثر قراءة اليوم</h4><span>المزيد</span></div>
-          <div class="stories-row">
-            <div class="story-card" onclick="openReader('ليالي العشق', 'أحمد', 'cover1')">
-              <div class="story-cover cover1"><i class="fas fa-moon"></i></div>
-              <span class="story-title">ليالي العشق</span><span class="story-author">أحمد</span>
-            </div>
-            <div class="story-card" onclick="openReader('ظلال الماضي', 'سارة', 'cover2')">
-              <div class="story-cover cover2"><i class="fas fa-cloud-moon"></i></div>
-              <span class="story-title">ظلال الماضي</span><span class="story-author">سارة</span>
-            </div>
-            <div class="story-card" onclick="openReader('قلب الصحراء', 'يوسف', 'cover3')">
-              <div class="story-cover cover3"><i class="fas fa-sun"></i></div>
-              <span class="story-title">قلب الصحراء</span><span class="story-author">يوسف</span>
-            </div>
-            <div class="story-card" onclick="openReader('سر الغابة', 'ليلى', 'cover4')">
-              <div class="story-cover cover4"><i class="fas fa-tree"></i></div>
-              <span class="story-title">سر الغابة</span><span class="story-author">ليلى</span>
-            </div>
-          </div>
-        </div>
-
-        <div>
-          <div class="section-title"><h4>اقتراحات لك</h4><span>تحديث</span></div>
-          <div class="suggested-list">
-            <div class="suggested-item" onclick="openReader('أجنحة الليل', 'نور', 'cover2')">
-              <div class="small-cover cover2"><i class="fas fa-feather"></i></div>
-              <div class="item-info">
-                <h5>أجنحة الليل</h5><p>بقلم نور · فانتازيا</p>
-                <div class="reads"><i class="fas fa-eye"></i> 2.3 مليون قراءة</div>
-              </div>
-            </div>
-            <div class="suggested-item" onclick="openReader('حب تحت المطر', 'مريم', 'cover1')">
-              <div class="small-cover cover1"><i class="fas fa-cloud-rain"></i></div>
-              <div class="item-info">
-                <h5>حب تحت المطر</h5><p>بقلم مريم · رومانسية</p>
-                <div class="reads"><i class="fas fa-eye"></i> 1.8 مليون قراءة</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="bottom-nav">
-        <div class="nav-item active" data-page="home"><i class="fas fa-home"></i><span>الرئيسية</span></div>
-        <div class="nav-item" data-page="explore"><i class="fas fa-compass"></i><span>استكشاف</span></div>
-        <div class="nav-item" data-page="createPage"><i class="fas fa-plus-circle"></i><span>إنشاء</span></div>
-        <div class="nav-item" data-page="libraryPage"><i class="fas fa-bookmark"></i><span>مكتبتي</span></div>
-        <div class="nav-item" data-page="profilePage"><i class="fas fa-user"></i><span>حسابي</span></div>
-      </div>
     </div>
 
-    <!-- صفحة إنشاء قصة -->
-    <div id="createPage" class="page">
-      <div class="page-header">
-        <i class="fas fa-arrow-right back-btn" onclick="navigateTo('home')"></i>
-        <h4 style="font-weight:700;">إنشاء قصة جديدة</h4>
-      </div>
-      <div class="page-content">
-        <div class="create-form">
-          <input type="text" id="storyTitleInput" placeholder="عنوان القصة">
-          <input type="text" id="storyGenreInput" placeholder="التصنيف (رومانسية، غموض...)">
-          <textarea id="storyContentInput" placeholder="اكتب قصتك هنا..."></textarea>
-          <button class="btn-primary" onclick="publishStory()">
-            <i class="fas fa-paper-plane"></i> نشر القصة
-          </button>
-          <p id="publishMessage" style="text-align:center; color:#2d2416; margin-top:8px;"></p>
+    <div id="main-app" style="display:none;">
+        <div id="content" class="screen active">
+            <div class="shelf"><div class="shelf-title">واصل القراءة</div><div class="scroll-container"></div></div>
+            <div class="shelf"><div class="shelf-title">أبرز المختارات من أجلك</div><div class="scroll-container"></div></div>
+            <div class="shelf"><div class="shelf-title">مقترحات من أجلك</div><div class="scroll-container"></div></div>
+            <div class="shelf"><div class="shelf-title">قصص مكتملة</div><div class="scroll-container"></div></div>
+            <div class="shelf"><div class="shelf-title">قراءتك التالية</div><div class="scroll-container"></div></div>
         </div>
-      </div>
-    </div>
 
-    <!-- صفحة المكتبة -->
-    <div id="libraryPage" class="page">
-      <div class="page-header">
-        <i class="fas fa-arrow-right back-btn" onclick="navigateTo('home')"></i>
-        <h4 style="font-weight:700;">مكتبتي</h4>
-      </div>
-      <div class="page-content" id="libraryContent">
-        <div class="library-item">
-          <div class="small-cover cover1"><i class="fas fa-book"></i></div>
-          <div style="flex:1;">
-            <h5>ليالي العشق</h5><p>أحمد · الفصل 3 من 12</p>
-            <div class="progress-bar"><div class="progress-fill" style="width:25%;"></div></div>
-          </div>
-        </div>
-        <div class="library-item">
-          <div class="small-cover cover3"><i class="fas fa-book"></i></div>
-          <div style="flex:1;">
-            <h5>قلب الصحراء</h5><p>يوسف · الفصل 7 من 15</p>
-            <div class="progress-bar"><div class="progress-fill" style="width:47%;"></div></div>
-          </div>
-        </div>
-        <p style="color:#7f6e5d; text-align:center; margin-top:20px;" id="libraryExtra"></p>
-      </div>
-    </div>
-
-    <!-- صفحة الملف الشخصي -->
-    <div id="profilePage" class="page">
-      <div class="page-header">
-        <i class="fas fa-arrow-right back-btn" onclick="navigateTo('home')"></i>
-        <h4 style="font-weight:700;">الملف الشخصي</h4>
-      </div>
-      <div class="page-content" style="text-align:center;">
-        <div class="profile-avatar"><i class="fas fa-user"></i></div>
-        <h3 style="margin-top:12px;" id="profileName">قارئ</h3>
-        <p style="color:#7f6e5d;">@reader_official</p>
-        <div style="display:flex; gap:12px; margin-top:20px; justify-content:center;">
-          <div class="stat-box"><strong>12</strong><br><small>قصص</small></div>
-          <div class="stat-box"><strong>1.2k</strong><br><small>متابع</small></div>
-          <div class="stat-box"><strong>48</strong><br><small>قراءة</small></div>
-        </div>
-        <button class="btn-secondary" style="margin-top:24px;" onclick="logout()">
-          <i class="fas fa-sign-out-alt"></i> تسجيل الخروج
-        </button>
-      </div>
-    </div>
-
-    <!-- قارئ القصة -->
-    <div id="readerView" class="page">
-      <div class="page-header">
-        <i class="fas fa-arrow-right back-btn" onclick="closeReader()"></i>
-        <div>
-          <h4 id="readerTitle" style="font-weight:700;">عنوان القصة</h4>
-          <p id="readerAuthor" style="font-size:13px; color:#7f6e5d;">الكاتب</p>
-        </div>
-      </div>
-      <div class="page-content" id="chapterContent">
-        <h3>الفصل الأول</h3><p>جاري تحميل النص...</p>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    // نظام التنقل بين الصفحات
-    const homeView = document.getElementById('homeView');
-    const loginScreen = document.getElementById('loginScreen');
-    const pages = {
-      home: homeView,
-      createPage: document.getElementById('createPage'),
-      libraryPage: document.getElementById('libraryPage'),
-      profilePage: document.getElementById('profilePage'),
-      readerView: document.getElementById('readerView')
-    };
-
-    let currentPage = 'login';
-    let publishedStories = [];
-
-    function showPage(pageId) {
-      Object.values(pages).forEach(p => p.classList.remove('active-page'));
-      if (pageId === 'home') {
-        homeView.classList.remove('hidden');
-        pages.createPage.classList.remove('active-page');
-        pages.libraryPage.classList.remove('active-page');
-        pages.profilePage.classList.remove('active-page');
-        pages.readerView.classList.remove('active-page');
-      } else if (pages[pageId]) {
-        homeView.classList.add('hidden');
-        pages[pageId].classList.add('active-page');
-      }
-      currentPage = pageId;
-    }
-
-    function navigateTo(pageId) {
-      if (pageId === 'home') {
-        closeReader();
-      }
-      showPage(pageId);
-      // تحديث شريط التنقل
-      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-      const navItem = document.querySelector(`.nav-item[data-page="${pageId}"]`);
-      if (navItem) navItem.classList.add('active');
-    }
-
-    // أحداث شريط التنقل
-    document.querySelectorAll('.nav-item').forEach(item => {
-      item.addEventListener('click', function() {
-        const page = this.getAttribute('data-page');
-        navigateTo(page);
-      });
-    });
-
-    // تسجيل الدخول
-    function login() {
-      const email = document.getElementById('emailInput').value.trim();
-      const password = document.getElementById('passwordInput').value.trim();
-      if (email && password) {
-        loginScreen.classList.add('hidden');
-        homeView.classList.remove('hidden');
-        document.getElementById('greetingName').innerHTML = 'مساء الخير، <span style="color:#ff5e00;">قارئ</span>';
-        document.getElementById('profileName').textContent = 'قارئ';
-        currentPage = 'home';
-      } else {
-        alert('الرجاء إدخال البريد الإلكتروني وكلمة المرور');
-      }
-    }
-
-    function quickLogin() {
-      document.getElementById('emailInput').value = 'قارئ@wattpad.com';
-      document.getElementById('passwordInput').value = '123456';
-      login();
-    }
-
-    function logout() {
-      homeView.classList.add('hidden');
-      Object.values(pages).forEach(p => p.classList.remove('active-page'));
-      loginScreen.classList.remove('hidden');
-      currentPage = 'login';
-    }
-
-    // إنشاء قصة ونشرها
-    function publishStory() {
-      const title = document.getElementById('storyTitleInput').value.trim();
-      const genre = document.getElementById('storyGenreInput').value.trim();
-      const content = document.getElementById('storyContentInput').value.trim();
-      const msg = document.getElementById('publishMessage');
-
-      if (!title || !genre || !content) {
-        msg.textContent = 'الرجاء ملء جميع الحقول';
-        msg.style.color = '#c94b4b';
-        return;
-      }
-
-      publishedStories.push({ title, genre, content, author: 'قارئ' });
-      document.getElementById('storyTitleInput').value = '';
-      document.getElementById('storyGenreInput').value = '';
-      document.getElementById('storyContentInput').value = '';
-      msg.textContent = '🎉 تم نشر القصة بنجاح!';
-      msg.style.color = '#2d7a2d';
-
-      // تحديث المكتبة
-      updateLibrary();
-    }
-
-    function updateLibrary() {
-      const extra = document.getElementById('libraryExtra');
-      if (publishedStories.length > 0) {
-        extra.innerHTML = '';
-        publishedStories.forEach(story => {
-          const div = document.createElement('div');
-          div.className = 'library-item';
-          div.innerHTML = `
-            <div class="small-cover" style="background:linear-gradient(135deg, #d4a373, #b5835a);"><i class="fas fa-feather"></i></div>
-            <div style="flex:1;">
-              <h5>${story.title}</h5><p>${story.author} · ${story.genre}</p>
-              <div class="progress-bar"><div class="progress-fill" style="width:10%;"></div></div>
+        <div id="search-screen" class="screen">
+            <div class="top-bar">
+                <span onclick="navigateTo('home')" style="cursor:pointer;"><i class="fa-solid fa-arrow-right"></i></span>
+                <span style="font-weight:bold;">البحث</span>
+                <span></span>
             </div>
-          `;
-          extra.appendChild(div);
+            <input type="text" id="search-box" placeholder="ابحث عن قصص...">
+            <div id="search-results"></div>
+        </div>
+
+        <div id="library-screen" class="screen">
+            <div class="top-bar">
+                <div onclick="navigateTo('home')" style="background-color: #ff500a; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: white;">
+                    <i class="fa-solid fa-arrow-right"></i>
+                </div>
+                <span></span>
+            </div>
+            <div style="background-color: black; color: white; text-align: center; padding: 10px; margin: 10px 0; border-radius: 12px;">قصصي المحملة</div>
+            <div id="local-library-container" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 10px;"></div>
+            <div class="shelf"><div class="shelf-title">قصص ننصح بها</div><div id="recommended-container" class="scroll-container"></div></div>
+        </div>
+
+        <div id="confirm-dialog" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; justify-content:center; align-items:center; backdrop-filter: blur(4px);">
+            <div style="background:white; padding:20px; border-radius:16px; text-align:center; width: 80%; animation: popIn 0.2s;">
+                <p>هل أنت متأكد من الحذف؟</p>
+                <div style="display:flex; justify-content:space-around; margin-top:20px;">
+                    <button id="confirm-yes" style="padding:10px 20px; cursor:pointer; border-radius:25px; border:none; background:#ff500a; color:white;">نعم</button>
+                    <button id="confirm-no" style="padding:10px 20px; cursor:pointer; border-radius:25px; border:1px solid #ddd;">لا</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="story-detail-screen" class="screen">
+            <div class="top-bar" id="story-detail-top-bar">
+                <span></span>
+                <i class="fa-solid fa-ellipsis-vertical"></i>
+            </div>
+            <div id="detail-content"></div>
+        </div>
+
+        <div id="write-screen" class="screen">
+            <div class="menu-item" id="btn-my-stories">قصصي <i class="fa-solid fa-list"></i></div>
+            <div class="menu-item" id="btn-create-story">إنشاء قصة جديدة <i class="fa-solid fa-plus"></i></div>
+            <div class="menu-item" id="btn-add-chapter">إضافة فصل <i class="fa-solid fa-plus"></i></div>
+            <div class="menu-item" id="btn-edit">تعديل قصة أو فصل <i class="fa-solid fa-pen-to-square"></i></div>
+        </div>
+
+        <div id="edit-option-screen" class="screen">
+            <div class="top-bar"><span onclick="navigateTo('write')">رجوع</span><span>تعديل</span></div>
+            <div class="menu-item" id="btn-edit-story-list">تعديل قصة</div>
+            <div class="menu-item" id="btn-edit-chapter-list">تعديل فصل</div>
+        </div>
+
+        <div id="select-story-screen" class="screen">
+            <div class="top-bar"><span onclick="navigateTo('write')">رجوع</span><span>اختر</span></div>
+            <div id="story-list-container"></div>
+        </div>
+
+        <div id="create-story-screen" class="screen">
+            <div class="top-bar">
+                <span>أضف معلومات القصة</span>
+                <span class="next-btn" id="next-btn">التالي</span>
+            </div>
+            <label for="file-upload" class="upload-box" id="upload-label"><i class="fa-solid fa-plus"></i> أضف غلافاً</label>
+            <input id="file-upload" type="file" style="display:none;" accept="image/*">
+            <input type="text" id="title-input" placeholder="عنوان القصة">
+            <input type="text" id="nem-input" placeholder="اسم الكاتب">
+            <textarea id="desc-input" placeholder="وصف القصة"></textarea>
+        </div>
+
+        <div id="editor-screen" class="screen">
+            <div class="editor-header">
+                <span>كتابة</span>
+                <button id="publish-btn" disabled>نشر</button>
+            </div>
+            <input type="text" id="part-title" placeholder="أعط عنواناً لهذا الفصل من قصتك">
+            <div id="image-container" class="image-preview"></div>
+            <textarea id="main-editor-area" style="height: 100px;" placeholder="اضغط هنا لبدء الكتابة"></textarea>
+        </div>
+
+        <div class="bottom-nav">
+            <div class="nav-item active" data-nav="home"><i class="fa-solid fa-house"></i></div>
+            <div class="nav-item" data-nav="search"><i class="fa-solid fa-magnifying-glass"></i></div>
+            <div class="nav-item center-pen" data-nav="write"><i class="fa-solid fa-pen"></i></div>
+            <div class="nav-item" data-nav="library"><i class="fa-solid fa-bars"></i></div>
+            <div class="nav-item" data-nav="notifications"><i class="fa-regular fa-bell"></i></div>
+        </div>
+    </div>
+
+    <script>
+        // ====================== نظام التنقل السلس ======================
+        const screens = ['content', 'search-screen', 'library-screen', 'story-detail-screen', 'write-screen', 'create-story-screen', 'editor-screen', 'select-story-screen', 'edit-option-screen'];
+        let currentScreen = 'content';
+        
+        function navigateTo(screenId, skipAnimation = false) {
+            const targetScreen = document.getElementById(screenId);
+            if (!targetScreen) return;
+            
+            const currentEl = document.getElementById(currentScreen);
+            
+            if (!skipAnimation && currentEl && currentEl !== targetScreen) {
+                currentEl.classList.add('screen-exit');
+                setTimeout(() => {
+                    currentEl.classList.remove('active', 'screen-exit');
+                    targetScreen.classList.add('active');
+                    currentScreen = screenId;
+                    
+                    // تحديث التبويب النشط في القائمة السفلية
+                    document.querySelectorAll('.nav-item').forEach(item => {
+                        item.classList.remove('active');
+                        if (item.getAttribute('data-nav') === getNavMapping(screenId)) {
+                            item.classList.add('active');
+                        }
+                    });
+                }, 150);
+            } else {
+                if (currentEl) currentEl.classList.remove('active');
+                targetScreen.classList.add('active');
+                currentScreen = screenId;
+                
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    item.classList.remove('active');
+                    if (item.getAttribute('data-nav') === getNavMapping(screenId)) {
+                        item.classList.add('active');
+                    }
+                });
+            }
+            
+            // تحديث شاشات خاصة عند التنقل إليها
+            if (screenId === 'library-screen') {
+                showLibrary();
+            }
+        }
+        
+        function getNavMapping(screenId) {
+            const map = {
+                'content': 'home',
+                'search-screen': 'search',
+                'write-screen': 'write',
+                'library-screen': 'library',
+                'story-detail-screen': 'home'
+            };
+            return map[screenId] || 'home';
+        }
+        
+        // ربط أزرار التنقل السفلي
+        document.querySelectorAll('.nav-item').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const navTo = btn.getAttribute('data-nav');
+                if (navTo === 'home') navigateTo('content');
+                else if (navTo === 'search') navigateTo('search-screen');
+                else if (navTo === 'write') navigateTo('write-screen');
+                else if (navTo === 'library') navigateTo('library-screen');
+                else if (navTo === 'notifications') showCustomAlert('قريباً...');
+            });
         });
-      }
-    }
+        
+        // تعديل دوال فتح الشاشات لاستخدام التنقل السلس
+        const originalOpenStoryDetail = window.openStoryDetail;
+        window.openStoryDetail = async function(story, autoChapterId = null, viewOverride = 'summary') {
+            // تنفيذ نفس المنطق الأصلي ولكن مع التنقل السلس
+            let storyData = window.storiesCache ? window.storiesCache.find(s => s.id === story.id) : null;
+            if(!storyData) {
+                const { data } = await _supabase.from('stories').select('*').eq('id', story.id).single();
+                storyData = data;
+            }
+            
+            const { data: chapters } = await _supabase.from('chapters').select('*').eq('story_id', story.id).order('id', { ascending: true });
+            
+            window.currentChapters = chapters;
+            _supabase.from('stories').update({ views: (storyData.views || 0) + 1 }).eq('id', storyData.id);
+            
+            navigateTo('story-detail-screen');
+            
+            const updateStoryUI = (viewType) => {
+                const isSummary = viewType === 'summary';
+                const chList = chapters || [];
+                
+                const topBar = document.getElementById('story-detail-top-bar');
+                if (viewType === 'summary') {
+                    topBar.innerHTML = `<span onclick="navigateTo('content')" style="cursor:pointer; font-weight:bold;"><i class="fa-solid fa-arrow-right"></i> رجوع</span><i class="fa-solid fa-ellipsis-vertical"></i>`;
+                } else if (viewType === 'chapters') {
+                    topBar.innerHTML = `<span onclick="navigateTo('content')" style="cursor:pointer; font-weight:bold;"><i class="fa-solid fa-arrow-right"></i> رجوع</span><i class="fa-solid fa-ellipsis-vertical"></i>`;
+                }
 
-    // فتح القارئ
-    function openReader(title, author) {
-      document.getElementById('readerTitle').textContent = title;
-      document.getElementById('readerAuthor').textContent = 'بقلم ' + author;
+                document.getElementById('detail-content').innerHTML = `
+                    <div style="padding: 20px;">
+                        <div style="display: flex; gap: 15px; margin-bottom: 20px; align-items: flex-start;">
+                            <div style="flex: 1; text-align: right;">
+                                <div style="font-size: 22px; font-weight: bold; margin-bottom: 5px;">${storyData.title}</div>
+                                <div style="color: #ff500a; font-weight: bold; margin-bottom: 10px;">${storyData.nem || 'اسم المستخدم'}</div>
+                                <div style="display: flex; gap: 15px; font-size: 13px; color: #555;">
+                                    <span><i class="fa-solid fa-eye"></i> ${storyData.views + 1}</span>
+                                    <span><i class="fa-solid fa-list"></i> ${chList.length} جزء</span>
+                                </div>
+                            </div>
+                            <div class="detail-img" style="background-image: url(${storyData.image_data});"></div>
+                        </div>
+                        <div style="display: flex; border-bottom: 2px solid #eee; margin-bottom: 15px; cursor: pointer;">
+                            <div id="tab-summary" style="flex: 1; text-align: center; padding: 10px; ${isSummary ? 'border-bottom: 2px solid #ff500a; font-weight: bold;' : 'color: #888;'}">الملخص</div>
+                            <div id="tab-chapters" style="flex: 1; text-align: center; padding: 10px; ${!isSummary ? 'border-bottom: 2px solid #ff500a; font-weight: bold;' : 'color: #888;'}">فصول (${chList.length})</div>
+                        </div>
+                        <div id="dynamic-view">
+                            ${isSummary ? `
+                                <div style="line-height: 1.8; color: #333; font-size: 14px; white-space: pre-wrap;">~ ${storyData.description}</div>
+                                <button id="start-read-btn" style="width: 100%; background: #000; color: #fff; padding: 15px; border: none; border-radius: 30px; font-weight: bold; margin-top: 20px; font-size: 16px; cursor: pointer;">ابدأ القراءة</button>
+                                <button id="lib-add-btn" style="width: 100%; background: #fff; color: #ff500a; border: 2px solid #ff500a; padding: 15px; border-radius: 30px; font-weight: bold; margin-top: 10px; font-size: 16px; cursor: pointer;">تحميل في المكتبة</button>
+                            ` : `
+                                <div id="chapters-list">
+                                    ${chList.map((ch, i) => `
+                                        <div class="chapter-item" onclick="showChapter(${i}, '${story.id}')">
+                                            <span>${ch.title || 'الفصل ' + (i+1)}</span>
+                                            <i class="fa-solid fa-chevron-left" style="color: #ccc; font-size: 14px;"></i>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            `}
+                        </div>
+                    </div>
+                `;
 
-      let text = '';
-      if (title.includes('ليالي العشق')) {
-        text = '<h3>الفصل الأول : لقاء غير متوقع</h3><p>في شوارع القاهرة القديمة، حيث تختلط رائحة الياسمين بالتاريخ، كان "يوسف" يسير حاملاً كتبه...</p>';
-      } else if (title.includes('ظلال الماضي')) {
-        text = '<h3>الفصل الأول : عودة الذكريات</h3><p>عادت "سلمى" إلى بيت جدتها القديم بعد عشر سنوات. الغبار يغطي الأثاث...</p>';
-      } else if (title.includes('قلب الصحراء')) {
-        text = '<h3>الفصل الأول : سر الواحة</h3><p>كانت القافلة تسير ببطء تحت الشمس الحارقة...</p>';
-      } else {
-        text = '<h3>الفصل الأول</h3><p>في ليلة هادئة، حيث القمر يطل من خلف الغيوم...</p>';
-      }
-      document.getElementById('chapterContent').innerHTML = text;
-      showPage('readerView');
-    }
+                document.getElementById('tab-summary').onclick = () => updateStoryUI('summary');
+                document.getElementById('tab-chapters').onclick = () => updateStoryUI('chapters');
+                
+                if (isSummary) {
+                    document.getElementById('start-read-btn').onclick = () => updateStoryUI('chapters');
+                    document.getElementById('lib-add-btn').onclick = () => {
+                        let lib = JSON.parse(localStorage.getItem('myLibrary') || '[]');
+                        if(lib.length >= 6) return showCustomAlert('مكتبتك ممتلئة احذف منها لإضافة قصص جديدة');
+                        if(lib.find(s => s.id === storyData.id)) return showCustomAlert('القصة موجودة مسبقاً');
+                        lib.push(storyData);
+                        localStorage.setItem('myLibrary', JSON.stringify(lib));
+                        showCustomAlert('تم تحميل القصة للمكتبة');
+                    };
+                }
 
-    function closeReader() {
-      pages.readerView.classList.remove('active-page');
-      homeView.classList.remove('hidden');
-      currentPage = 'home';
-    }
+                if(autoChapterId && !isSummary) {
+                    const idx = chList.findIndex(c => c.id == autoChapterId);
+                    if(idx !== -1) renderChapterContent(idx, story.id);
+                }
+            };
+            
+            window.showChapter = (index, storyId) => {
+                const ch = window.currentChapters[index];
+                window.location.href = window.location.pathname + `?story_id=${storyId}&chapter_id=${ch.id}`;
+            };
 
-    // التصنيفات
-    document.querySelectorAll('.tag').forEach(tag => {
-      tag.addEventListener('click', function() {
-        document.querySelectorAll('.tag').forEach(t => t.classList.remove('active'));
-        this.classList.add('active');
-      });
-    });
+            function renderChapterContent(index, storyId) {
+                const ch = window.currentChapters[index];
+                document.getElementById('story-detail-top-bar').innerHTML = `<span onclick="window.openStoryDetail({id: '${storyId}'})" style="cursor:pointer; font-weight:bold;"><i class="fa-solid fa-arrow-right"></i> رجوع</span><i class="fa-solid fa-ellipsis-vertical"></i>`;
+                document.getElementById('detail-content').innerHTML = `
+                    <div style="padding: 20px; font-size: 16px; line-height: 1.9; color: #222; white-space: pre-wrap;">${ch.content}</div>
+                `;
+            }
 
-    // البدء بواجهة تس
+            updateStoryUI(viewOverride);
+        };
+        
+        // تعديل showLibrary للتنقل
+        const originalShowLibrary = window.showLibrary;
+        async function showLibrary() {
+            const localCont = document.getElementById('local-library-container');
+            const lib = JSON.parse(localStorage.getItem('myLibrary') || '[]');
+            localCont.innerHTML = '';
+            
+            lib.forEach(s => {
+                const wrapper = document.createElement('div');
+                wrapper.style.position = 'relative';
+                wrapper.innerHTML = `
+                    <div class="story-item" style="background-image: url(${s.image_data}); width: 100%;"></div>
+                    <div class="delete-btn" style="position: absolute; top: 5px; right: 5px; border-radius: 50%; padding: 5px; cursor: pointer; color: #ff500a; z-index: 10;">
+                        <i class="fa-solid fa-trash"></i>
+                    </div>
+                `;
+                wrapper.querySelector('.story-item').onclick = () => {
+                     const originalHtml = wrapper.querySelector('.story-item').innerHTML;
+                     wrapper.querySelector('.story-item').innerHTML = `<div style="display:flex; align-items:center; justify-content:center; height:100%;"><i class="fa-solid fa-spinner fa-spin" style="color:#ff500a;"></i></div>`;
+                     window.openStoryDetail(s).finally(() => { wrapper.querySelector('.story-item').innerHTML = originalHtml; });
+                };
+                wrapper.querySelector('.delete-btn').onclick = (e) => {
+                    e.stopPropagation();
+                    storyToDeleteId = s.id;
+                    confirmDialog.style.display = 'flex';
+                    confirmYes.onclick = () => {
+                        let lib = JSON.parse(localStorage.getItem('myLibrary') || '[]');
+                        const updatedLib = lib.filter(item => item.id !== storyToDeleteId);
+                        localStorage.setItem('myLibrary', JSON.stringify(updatedLib));
+                        confirmDialog.style.display = 'none';
+                        showLibrary();
+                    };
+                    confirmNo.onclick = () => confirmDialog.style.display = 'none';
+                };
+                localCont.appendChild(wrapper);
+            });
+
+            const recCont = document.getElementById('recommended-container');
+            const { data: recs } = await _supabase.from('stories').select('*').limit(10);
+            recCont.innerHTML = '';
+            (recs || []).forEach(s => {
+                const w = document.createElement('div');
+                w.style.minWidth = '100px';
+                w.innerHTML = `<div class="story-item" style="background-image: url(${s.image_data});"></div>`;
+                w.onclick = () => {
+                    const originalW = w.innerHTML;
+                    w.innerHTML = `<div class="story-item" style="display:flex; align-items:center; justify-content:center;"><i class="fa-solid fa-spinner fa-spin" style="color:#ff500a;"></i></div>`;
+                    window.openStoryDetail(s).finally(() => { w.innerHTML = originalW; });
+                };
+                recCont.appendChild(w);
+            });
+        }
+        window.showLibrary = showLibrary;
+        
+        // تعديل الباقي لاستخدام navigateTo بدلاً من display المباشر
+        const oldBtnMyStories = document.getElementById('btn-my-stories').onclick;
+        document.getElementById('btn-my-stories').onclick = async () => {
+            navigateTo('select-story-screen');
+            const { data } = await _supabase.from('stories').select('id, title, description, image_data').eq('user_id', currentUserId);
+            storyListContainer.innerHTML = '';
+            (data || []).forEach(story => {
+                const item = document.createElement('div');
+                item.className = 'menu-item';
+                item.style.alignItems = 'center';
+                item.innerHTML = `<span>${story.title}</span> <i class="fa-solid fa-bars" id="opt-${story.id}"></i>`;
+                const optBtn = item.querySelector(`#opt-${story.id}`);
+                optBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    item.innerHTML = `
+                        <div style="display:flex; gap:10px; width: 100%; justify-content: space-around;">
+                            <button style="padding: 10px; border:none; background:#ff500a; color:#fff; border-radius:5px;" onclick="deleteStory('${story.id}')">حذف القصة</button>
+                            <button style="padding: 10px; border:none; background:#333; color:#fff; border-radius:5px;" onclick="showChaptersForDelete('${story.id}')">حذف فصل</button>
+                        </div>
+                    `;
+                };
+                storyListContainer.appendChild(item);
+            });
+        };
+        
+        document.getElementById('btn-create-story').onclick = () => {
+            navigateTo('create-story-screen');
+            isEditMode = false;
+            hasImage = false;
+            coverFile = null;
+            titleInput.value = '';
+            nemInput.value = '';
+            descInput.value = '';
+            document.getElementById('upload-label').innerHTML = '<i class="fa-solid fa-plus"></i> أضف غلافاً';
+            checkForm();
+        };
+        
+        document.getElementById('btn-add-chapter').onclick = async () => {
+            navigateTo('select-story-screen');
+            const { data } = await _supabase.from('stories').select('id, title').eq('user_id', currentUserId);
+            storyListContainer.innerHTML = '';
+            (data || []).forEach(story => {
+                const item = document.createElement('div');
+                item.className = 'menu-item';
+                item.innerHTML = `<span>${story.title}</span>`;
+                item.onclick = () => {
+                    selectedStoryId = story.id;
+                    navigateTo('editor-screen');
+                };
+                storyListContainer.appendChild(item);
+            });
+        };
+        
+        document.getElementById('btn-edit').onclick = () => navigateTo('edit-option-screen');
+        
+        document.getElementById('btn-edit-story-list').onclick = async () => {
+            editType = 'story';
+            navigateTo('select-story-screen');
+            const { data } = await _supabase.from('stories').select('id, title, description, image_data, nem').eq('user_id', currentUserId);
+            storyListContainer.innerHTML = '';
+            (data || []).forEach(story => {
+                const item = document.createElement('div');
+                item.className = 'menu-item';
+                item.innerHTML = `<span>${story.title}</span>`;
+                item.onclick = () => {
+                    isEditMode = true;
+                    editTargetId = story.id;
+                    titleInput.value = story.title;
+                    nemInput.value = story.nem || '';
+                    descInput.value = story.description;
+                    hasImage = true; 
+                    coverFile = null;
+                    document.getElementById('upload-label').innerHTML = `<img src="${story.image_data}" style="width:100%; height:100%; object-fit:cover; border-radius:8px;">`;
+                    navigateTo('create-story-screen');
+                    nextBtn.classList.add('active'); 
+                };
+                storyListContainer.appendChild(item);
+            });
+        };
+        
+        document.getElementById('btn-edit-chapter-list').onclick = async () => {
+            editType = 'chapter';
+            navigateTo('select-story-screen');
+            const { data } = await _supabase.from('stories').select('id, title').eq('user_id', currentUserId);
+            storyListContainer.innerHTML =
